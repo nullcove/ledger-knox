@@ -1,20 +1,23 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="1200" height="475" alt="Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# আমার হিসাব (My Ledger)
 
-This contains everything you need to run your app locally.
+এইটি একটি ব্যক্তিগত হিসাব ব্যবস্থাপনা সিস্টেম (Personal Accounting Management System)। 
 
-View your app in AI Studio: https://ai.studio/apps/df22dd3c-7e38-4518-a925-19a42dc1355b
+## ফিচারসমূহ
 
-## Run Locally
+- সহজ এবং সুন্দর ইন্টারফেস।
+- হিসাবের বিস্তারিত ট্র্যাকিং।
+- চার্ট এবং গ্রাফের মাধ্যমে ডেটা ভিজ্যুয়ালাইজেশন।
 
-**Prerequisites:**  Node.js
+## যেভাবে চালাবেন
 
+**প্রয়োজনীয়তা:** Node.js
 
-1. Install dependencies:
+১. ডিপেন্ডেন্সি ইন্সটল করুন:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+
+২. লোকাল সার্ভারে রান করুন:
    `npm run dev`
