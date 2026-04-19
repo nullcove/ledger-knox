@@ -85,6 +85,23 @@ export default function AppOverview() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tab = urlParams.get('tab');
+      if (tab) setActiveTab(tab);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (activeTab !== 'dashboard') url.searchParams.set('tab', activeTab);
+      else url.searchParams.delete('tab');
+      window.history.replaceState({}, '', url);
+    }
+  }, [activeTab]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -959,7 +976,7 @@ export default function AppOverview() {
                     if (!budgetLimit) return;
                     const existing = budgets.find(b => b.category === budgetCat);
                     if (existing) await insforge.database.from('budgets').update({ monthly_limit: Number(budgetLimit) }).eq('id', existing.id);
-                    else await insforge.database.from('budgets').insert({ category: budgetCat, monthly_limit: Number(budgetLimit) });
+                    else await insforge.database.from('budgets').insert({ category: budgetCat, monthly_limit: Number(budgetLimit), user_id: currentUser!.id });
                     setBudgetLimit(''); await fetchAll();
                   }} className="bg-[#B45309] text-white py-4 px-6 rounded-2xl font-black hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-xl dark:shadow-none shadow-[#B45309]/30">
                     <Plus className="w-5 h-5" /> সেট করুন
@@ -1043,7 +1060,7 @@ export default function AppOverview() {
                 </div>
                 <button onClick={async () => {
                   if (!goalAddName || !goalAddTarget) return;
-                  await insforge.database.from('goals').insert({ name: goalAddName, target: Number(goalAddTarget), saved: Number(goalAddSaved || 0) });
+                  await insforge.database.from('goals').insert({ name: goalAddName, target: Number(goalAddTarget), saved: Number(goalAddSaved || 0), user_id: currentUser!.id });
                   setGoalAddName(''); setGoalAddTarget(''); setGoalAddSaved(''); await fetchAll();
                 }} className="bg-[#B45309] text-white py-4 px-8 rounded-2xl font-black hover:scale-105 transition-all flex items-center gap-2 shadow-xl dark:shadow-none shadow-[#B45309]/30">
                   <Plus className="w-5 h-5" /> লক্ষ্য যুক্ত করুন
@@ -1113,7 +1130,7 @@ export default function AppOverview() {
             <div className="space-y-8 animate-mati">
               <form onSubmit={async (e) => {
                 e.preventDefault(); const fm = new FormData(e.currentTarget);
-                const { error } = await insforge.database.from('debts').insert({ person: fm.get('person') as string, amount: Number(fm.get('amount')), type: fm.get('type') as string, note: fm.get('note') as string });
+                const { error } = await insforge.database.from('debts').insert({ person: fm.get('person') as string, amount: Number(fm.get('amount')), type: fm.get('type') as string, note: fm.get('note') as string, user_id: currentUser!.id });
                 if (!error) { fetchAll(); (e.target as HTMLFormElement).reset(); }
               }} className="p-8 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[40px] shadow-sm dark:shadow-none space-y-6">
                 <h3 className="text-xl font-black flex items-center gap-3"><Briefcase className="w-5 h-5 text-[#B45309]" /> নতুন ধার হিসাব</h3>
@@ -1224,7 +1241,7 @@ export default function AppOverview() {
 
               <form onSubmit={async (e) => {
                 e.preventDefault(); const fm = new FormData(e.currentTarget);
-                const { error } = await insforge.database.from('subscriptions').insert({ name: fm.get('name') as string, amount: Number(fm.get('amount')), next_date: new Date(fm.get('date') as string).toISOString() });
+                const { error } = await insforge.database.from('subscriptions').insert({ name: fm.get('name') as string, amount: Number(fm.get('amount')), next_date: new Date(fm.get('date') as string).toISOString(), user_id: currentUser!.id });
                 if (!error) { fetchAll(); (e.target as HTMLFormElement).reset(); }
               }} className="p-8 bg-[#18181B] dark:bg-zinc-900 rounded-[40px] grid grid-cols-1 md:grid-cols-4 gap-5 items-end text-white shadow-2xl">
                 <div className="space-y-2 md:col-span-2"><label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">বিলের নাম</label><input name="name" required className="w-full bg-white/5 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 p-4 rounded-2xl font-bold outline-none" placeholder="Netflix, WiFi..." /></div>
@@ -1270,9 +1287,9 @@ export default function AppOverview() {
             <div className="space-y-8 animate-mati">
               <div className="flex gap-3">
                 <input value={taskInput} onChange={e => setTaskInput(e.target.value)}
-                  onKeyDown={async (e) => { if (e.key === 'Enter' && taskInput.trim()) { await insforge.database.from('todos').insert({ text: taskInput.trim(), is_completed: false }); setTaskInput(''); await fetchAll(); } }}
+                  onKeyDown={async (e) => { if (e.key === 'Enter' && taskInput.trim()) { await insforge.database.from('todos').insert({ text: taskInput.trim(), is_completed: false, user_id: currentUser!.id }); setTaskInput(''); await fetchAll(); } }}
                   className={`flex-1 ${inputCls} text-lg`} placeholder="নতুন আইটেম লিখুন... (Enter)" />
-                <button onClick={async () => { if (!taskInput.trim()) return; await insforge.database.from('todos').insert({ text: taskInput.trim(), is_completed: false }); setTaskInput(''); await fetchAll(); }} className="bg-[#B45309] text-white px-6 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-[#92400E] transition-all shadow-xl dark:shadow-none shadow-[#B45309]/30">
+                <button onClick={async () => { if (!taskInput.trim()) return; await insforge.database.from('todos').insert({ text: taskInput.trim(), is_completed: false, user_id: currentUser!.id }); setTaskInput(''); await fetchAll(); }} className="bg-[#B45309] text-white px-6 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-[#92400E] transition-all shadow-xl dark:shadow-none shadow-[#B45309]/30">
                   <Plus className="w-5 h-5" /> যোগ
                 </button>
               </div>
