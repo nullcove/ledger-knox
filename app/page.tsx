@@ -9,7 +9,7 @@ import {
   Wallet, PieChart, Star, Github, Menu, X, ArrowDown, Users, Lock, Globe,
   ShieldCheck, Heart, Sparkles, Play, MousePointer2, UserPlus, Receipt,
   CheckCircle2, CreditCard, Target, Smartphone, Globe2, LayoutDashboard,
-  MessageSquare, FileText, Info, Download, Home, Settings, BELL
+  MessageSquare, FileText, Info, Download, Home, Settings, Bell
 } from 'lucide-react';
 import CustomCursor from '@/components/CustomCursor';
 import { insforge } from '@/lib/insforge';
@@ -56,7 +56,10 @@ export default function LandingPage() {
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     // Auth check
     insforge.auth.getCurrentUser().then(({ data }) => {
       setIsLoggedIn(!!data.user);
@@ -90,29 +93,31 @@ export default function LandingPage() {
       <CustomCursor />
       
       {/* Dynamic Background Particles */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-[#92400E]/10 rounded-full"
-            initial={{ 
-              x: Math.random() * 100 + "%", 
-              y: Math.random() * 100 + "%",
-              opacity: 0 
-            }}
-            animate={{ 
-              y: [null, Math.random() * 100 + "%"],
-              opacity: [0, 0.5, 0],
-              scale: [0, 1.5, 0]
-            }}
-            transition={{ 
-              duration: Math.random() * 10 + 10, 
-              repeat: Infinity, 
-              ease: "linear" 
-            }}
-          />
-        ))}
-      </div>
+      {mounted && (
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-[#92400E]/10 rounded-full"
+              initial={{ 
+                x: Math.random() * 100 + "%", 
+                y: Math.random() * 100 + "%",
+                opacity: 0 
+              }}
+              animate={{ 
+                y: [null, Math.random() * 100 + "%"],
+                opacity: [0, 0.5, 0],
+                scale: [0, 1.5, 0]
+              }}
+              transition={{ 
+                duration: Math.random() * 10 + 10, 
+                repeat: Infinity, 
+                ease: "linear" 
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Floating Header */}
       <motion.nav 

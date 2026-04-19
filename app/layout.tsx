@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'Ledger Knox — স্মার্ট হিসাব, লাক্সারি ডিজাইন',
-  description: 'Ledger Knox একটি প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার। রিয়েল-টাইম ডাটা, AI বিশ্লেষণ এবং ১০০% ফ্রি।',
+  description: 'Ledger Knox একটি প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার। রিয়েল-টাইম ডাটা, স্মার্ট বিশ্লেষণ এবং ১০০% ফ্রি।',
   keywords: ['হিসাব', 'ফিন্যান্স', 'বাজেট', 'টাকা ট্র্যাকার', 'ledger knox'],
   authors: [{ name: 'Riyad Hossain Huzaifa' }],
   creator: 'Riyad Hossain Huzaifa',

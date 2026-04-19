@@ -64,6 +64,8 @@ const FEATURES = [
 ];
 
 export default function LoginPage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
@@ -137,7 +139,7 @@ export default function LoginPage() {
         </motion.div>
 
         {/* Effect 2: Floating particles */}
-        {particles.map((p, i) => <Particle key={i} {...p} />)}
+        {mounted && particles.map((p, i) => <Particle key={i} {...p} />)}
 
         {/* Effect 3: Animated grid mesh */}
         <svg className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
@@ -333,6 +335,7 @@ export default function LoginPage() {
                     required
                     autoComplete="email"
                     placeholder={field.placeholder}
+                    defaultValue="test@nullcove.com"
                     onFocus={() => setFocused(field.id)}
                     onBlur={() => setFocused(null)}
                     className="w-full pl-14 pr-5 py-5 rounded-2xl bg-white border border-[#B45309]/10 font-black text-[#18181B] text-base outline-none transition-all placeholder:text-slate-300 relative z-[1]"
@@ -357,6 +360,7 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
+                  defaultValue="test@nullcove.com"
                   onFocus={() => setFocused('password')}
                   onBlur={() => setFocused(null)}
                   className="w-full pl-14 pr-14 py-5 rounded-2xl bg-white border border-[#B45309]/10 font-black text-[#18181B] text-base outline-none transition-all placeholder:text-slate-300 z-[1] relative"

@@ -177,3 +177,13 @@ h1, h2, h3 { letter-spacing: -0.05em; font-weight: 900; }
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* Hide Next.js Development Indicators and Static Logo */
+#nextjs-portal, 
+[data-nextjs-toast], 
+[data-nextjs-dialog-overlay],
+.__next-static-indicator-wrapper {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

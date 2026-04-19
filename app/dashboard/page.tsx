@@ -536,7 +536,7 @@ export default function AppOverview() {
       </AnimatePresence>
 
       {/* Main */}
-      <main className="flex-1 overflow-y-auto scrollbar-hide min-w-0">
+      <main className="flex-1 overflow-y-auto scrollbar-hide min-w-0 pb-24 lg:pb-0">
         {/* Header */}
         <header className="h-16 sm:h-20 px-4 sm:px-8 flex items-center justify-between sticky top-0 bg-[#F9F4F0]/95 backdrop-blur-xl z-30 border-b border-[#B45309]/5">
           <div className="flex items-center gap-3">
@@ -770,7 +770,7 @@ export default function AppOverview() {
                     {debts.length === 0 && <p className="text-slate-400 text-xs font-black uppercase text-center tracking-widest">Clean Sheet ✓</p>}
                   </div>
 
-                  <div className="p-8 bg-[#18181B] text-white rounded-[40px] space-y-5 shadow-2xl shadow-black/30">
+                  <div className="p-8 bg-[#18181B] text-white rounded-[40px] shadow-2xl shadow-black/30">
                     <div className="flex justify-between items-center">
                       <h4 className="text-xl font-black flex items-center gap-2"><RefreshCw className="w-5 h-5 text-[#B45309]" /> রিকারিং বিল</h4>
                       <button onClick={() => setActiveTab('recurring')} className="text-[#B45309] font-black text-[10px] uppercase tracking-widest hover:underline">বিস্তারিত</button>
@@ -1534,52 +1534,7 @@ export default function AppOverview() {
         )}
       </AnimatePresence>
 
-                <div className="flex p-2 bg-[#18181B] rounded-[28px] gap-2">
-                  <button type="button" onClick={() => setFormType('expense')}
-                    className={`flex-1 py-4 rounded-[22px] font-black text-sm uppercase tracking-widest transition-all ${formType === 'expense' ? 'bg-[#B45309] text-white shadow-xl shadow-[#B45309]/30' : 'text-white/40 hover:text-white'}`}>ব্যয়</button>
-                  <button type="button" onClick={() => setFormType('income')}
-                    className={`flex-1 py-4 rounded-[22px] font-black text-sm uppercase tracking-widest transition-all ${formType === 'income' ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-500/30' : 'text-white/40 hover:text-white'}`}>আয়</button>
-                </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {CATEGORIES.map(c => (
-                      <button key={c.id} type="button" onClick={() => setCatInput(c.id)}
-                        className={`p-3 rounded-2xl flex flex-col items-center gap-1 transition-all ${catInput === c.id ? 'bg-[#18181B] text-white' : 'bg-white text-slate-400 hover:bg-[#B45309]/5'}`}>
-                        <c.icon className="w-5 h-5" />
-                        <span className="text-[8px] font-black">{c.id}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ওয়ালেট</label>
-                    <select value={walletInput} onChange={e => setWalletInput(e.target.value as WalletType)} className="w-full bg-white border border-[#B45309]/10 px-5 py-4 rounded-2xl text-[#18181B] font-black text-sm outline-none appearance-none">
-                      {wallets.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">তারিখ</label>
-                    <input type="date" value={dateInput} onChange={e => setDateInput(e.target.value)} className="w-full bg-white border border-[#B45309]/10 px-5 py-4 rounded-2xl text-[#18181B] font-black text-sm outline-none" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">নোট</label>
-                  <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value)} className="w-full bg-white border border-[#B45309]/10 px-5 py-4 rounded-2xl text-[#18181B] placeholder:text-slate-300 font-black outline-none" placeholder="বিবরণ..." />
-                </div>
-
-                <button type="submit" disabled={isSaving} className="w-full bg-[#18181B] hover:bg-black text-white py-5 rounded-[28px] font-black text-xl shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50">
-                  {isSaving ? <Loader2 className="w-7 h-7 animate-spin" /> : <>সেভ করুন <ArrowRight className="w-6 h-6" /></>}
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ══════════════ MOBILE BOTTOM NAV ══════════════ */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#B45309]/10 px-2 py-2 safe-area-inset-bottom shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.08)]">
