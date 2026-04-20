@@ -98,8 +98,15 @@ export default function LoginPage() {
       email: fd.get('email') as string,
       password: fd.get('password') as string,
     });
-    if (err) setError('ভুল ইমেইল বা পাসওয়ার্ড। আবার চেষ্টা করুন।');
-    else window.location.href = '/dashboard';
+    if (err) {
+      if (err.message.toLowerCase().includes('verification')) {
+        setError('আপনার একাউন্টটি এখনো ভেরিফাই করা হয়নি। অনুগ্রহ করে সাইনআপ পেজে গিয়ে ইমেইল ভেরিফাই করুন।');
+      } else {
+        setError('ভুল ইমেইল বা পাসওয়ার্ড। আবার চেষ্টা করুন।');
+      }
+    } else {
+      window.location.href = '/dashboard';
+    }
     setLoading(false);
   };
 
@@ -335,7 +342,6 @@ export default function LoginPage() {
                     required
                     autoComplete="email"
                     placeholder={field.placeholder}
-                    defaultValue="test@nullcove.com"
                     onFocus={() => setFocused(field.id)}
                     onBlur={() => setFocused(null)}
                     className="w-full pl-14 pr-5 py-5 rounded-2xl bg-white border border-[#B45309]/10 font-black text-[#18181B] text-base outline-none transition-all placeholder:text-slate-300 relative z-[1]"
@@ -360,7 +366,6 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  defaultValue="test@nullcove.com"
                   onFocus={() => setFocused('password')}
                   onBlur={() => setFocused(null)}
                   className="w-full pl-14 pr-14 py-5 rounded-2xl bg-white border border-[#B45309]/10 font-black text-[#18181B] text-base outline-none transition-all placeholder:text-slate-300 z-[1] relative"
