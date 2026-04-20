@@ -19,19 +19,28 @@ export default function ContactPage() {
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     
-    const { error } = await insforge.database.from('messages').insert({
+    const { error: dbError } = await insforge.database.from('messages').insert({
       name: formData.get('name') as string,
       email: formData.get('email') as string,
-      subject: formData.get('subject') as string,
       message: formData.get('message') as string,
       type: formData.get('type') as string,
     });
 
-    if (!error) {
+    if (!dbError) {
+        // Also send email via Edge Function
+        await insforge.functions.invoke('send-contact-email', {
+          body: {
+            name: formData.get('name'),
+            userEmail: formData.get('email'),
+            type: formData.get('type'),
+            message: formData.get('message'),
+          }
+        });
+        
         setIsSuccess(true);
         (e.target as HTMLFormElement).reset();
     } else {
-        alert('ত্রুটি হয়েছে: ' + error.message);
+        alert('ত্রুটি হয়েছে: ' + dbError.message);
     }
     setIsSubmitting(false);
   };
@@ -70,7 +79,7 @@ export default function ContactPage() {
                   </div>
                   <div className="space-y-4">
                      <p className="text-[10px] font-black text-[#92400E] uppercase tracking-widest">ইমেইল</p>
-                     <p className="text-2xl font-black">developer@huzaifaverse.com</p>
+                     <p className="text-2xl font-black">developer@nullcove.com</p>
                   </div>
                </div>
 

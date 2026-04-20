@@ -31,190 +31,203 @@ interface Transaction {
   id: string; type: TransactionType; amount: number;
   category: string; note: string; date: string; walletId?: WalletType;
 }
-interface Todo { id: string; text: string; isCompleted: boolean; category: string; quantity: string; unit: string; priority: 'low'|'normal'|'high'; estimated_price: number; actual_price: number; actual_qty: string; purchased_at: string; }
+interface Todo { id: string; text: string; isCompleted: boolean; category: string; quantity: string; unit: string; priority: 'low'|'normal'|'high'; estimated_price: number; actual_price: number; actual_qty: string; purchased_at: string; target_date?: string; }
 
 // ══════════════════════════════════════════════════
 // GROCERY DATABASE — 140+ items with banglish keywords
 // ══════════════════════════════════════════════════
 interface GroceryItem { name: string; banglish: string[]; emoji: string; unit: string; category: string; }
 const GROCERY_DB: GroceryItem[] = [
-  // ──── শাকসবজি ────
+  // ──── শাকসবজি (Vegetables) ────
   { name: 'আলু', banglish: ['alu', 'aloo', 'potato'], emoji: '🥔', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'পেঁয়াজ', banglish: ['peyaj', 'piyaj', 'pyaj', 'onion'], emoji: '🧅', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'পেঁয়াজ', banglish: ['peyaj', 'piyaj', 'onion'], emoji: '🧅', unit: 'কেজি', category: 'শাকসবজি' },
   { name: 'রসুন', banglish: ['rashun', 'rasun', 'garlic'], emoji: '🧄', unit: 'গ্রাম', category: 'শাকসবজি' },
-  { name: 'আদা', banglish: ['ada', 'ginger', 'adaa'], emoji: '🫚', unit: 'গ্রাম', category: 'শাকসবজি' },
-  { name: 'কাঁচা মরিচ', banglish: ['kacha morich', 'green chili', 'morich', 'kacha morich'], emoji: '🌶️', unit: 'গ্রাম', category: 'শাকসবজি' },
+  { name: 'আদা', banglish: ['ada', 'ginger'], emoji: '🫚', unit: 'গ্রাম', category: 'শাকসবজি' },
+  { name: 'কাঁচা মরিচ', banglish: ['kacha morich', 'green chili'], emoji: '🌶️', unit: 'গ্রাম', category: 'শাকসবজি' },
   { name: 'টমেটো', banglish: ['tomato', 'tometo'], emoji: '🍅', unit: 'কেজি', category: 'শাকসবজি' },
   { name: 'বেগুন', banglish: ['begun', 'brinjal', 'eggplant'], emoji: '🍆', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'পটোল', banglish: ['potol', 'pointed gourd', 'parwal'], emoji: '🥒', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'করলা', banglish: ['korla', 'bitter gourd', 'karela'], emoji: '🫛', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'ঢেঁড়স', banglish: ['dherosh', 'okra', 'ladies finger', 'bhindi'], emoji: '💚', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'লাউ', banglish: ['lau', 'bottle gourd', 'gourd', 'kodu'], emoji: '🎃', unit: 'পিস', category: 'শাকসবজি' },
-  { name: 'মিষ্টি কুমড়ো', banglish: ['mishti kumro', 'pumpkin', 'kumro'], emoji: '🎃', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'শসা', banglish: ['shasha', 'sasha', 'shosa', 'cucumber'], emoji: '🥒', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'পটোল', banglish: ['potol', 'pointed gourd'], emoji: '🥒', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'করলা', banglish: ['korla', 'bitter gourd'], emoji: '🫛', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'ঢেঁড়স', banglish: ['dherosh', 'okra'], emoji: '💚', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'লাউ', banglish: ['lau', 'bottle gourd'], emoji: '🎃', unit: 'পিস', category: 'শাকসবজি' },
+  { name: 'মিষ্টি কুমড়ো', banglish: ['mishti kumro', 'pumpkin'], emoji: '🎃', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'শসা', banglish: ['shasha', 'cucumber'], emoji: '🥒', unit: 'কেজি', category: 'শাকসবজি' },
   { name: 'গাজর', banglish: ['gajor', 'carrot'], emoji: '🥕', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'ফুলকপি', banglish: ['phulkopi', 'fulkopi', 'cauliflower', 'phulkophi'], emoji: '🥦', unit: 'পিস', category: 'শাকসবজি' },
-  { name: 'বাঁধাকপি', banglish: ['badhakopi', 'bandha kopi', 'cabbage', 'kophi'], emoji: '🥬', unit: 'পিস', category: 'শাকসবজি' },
-  { name: 'ব্রকলি', banglish: ['broccoli', 'brokoli'], emoji: '🥦', unit: 'পিস', category: 'শাকসবজি' },
+  { name: 'ফুলকপি', banglish: ['phulkopi', 'fulkopi', 'cauliflower'], emoji: '🥦', unit: 'পিস', category: 'শাকসবজি' },
+  { name: 'বাঁধাকপি', banglish: ['badhakopi', 'cabbage'], emoji: '🥬', unit: 'পিস', category: 'শাকসবজি' },
   { name: 'পালং শাক', banglish: ['palang', 'palang shak', 'spinach'], emoji: '🥬', unit: 'আঁটি', category: 'শাকসবজি' },
-  { name: 'লালশাক', banglish: ['lal shak', 'lalshak', 'red spinach', 'lal'], emoji: '🥬', unit: 'আঁটি', category: 'শাকসবজি' },
-  { name: 'পুঁইশাক', banglish: ['pui shak', 'puishak', 'malabar spinach', 'pui'], emoji: '🥬', unit: 'আঁটি', category: 'শাকসবজি' },
-  { name: 'মূলা', banglish: ['mula', 'moola', 'radish'], emoji: '🫚', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'সিম', banglish: ['shim', 'sim', 'beans', 'broad beans'], emoji: '🫘', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'বরবটি', banglish: ['barboti', 'long beans', 'string bean'], emoji: '🌿', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'মিষ্টি আলু', banglish: ['mishti alu', 'sweet potato', 'mishti aloo'], emoji: '🍠', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'কাঁচা পেঁপে', banglish: ['kacha pepe', 'green papaya', 'pepe'], emoji: '🍈', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'কচুর লতি', banglish: ['kochur loti', 'taro stem', 'kochu loti', 'loti'], emoji: '🌿', unit: 'আঁটি', category: 'শাকসবজি' },
-  { name: 'চিচিঙ্গা', banglish: ['chichinga', 'snake gourd', 'ridge gourd'], emoji: '🥒', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'ঝিঙে', banglish: ['jhinge', 'ridge gourd', 'turai'], emoji: '🌿', unit: 'কেজি', category: 'শাকসবজি' },
-  { name: 'কচু', banglish: ['kochu', 'taro', 'kachoo'], emoji: '🌿', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'লালশাক', banglish: ['lal shak', 'lalshak'], emoji: '🥬', unit: 'আঁটি', category: 'শাকসবজি' },
+  { name: 'পুঁইশাক', banglish: ['pui shak', 'puishak'], emoji: '🥬', unit: 'আঁটি', category: 'শাকসবজি' },
+  { name: 'কলমি শাক', banglish: ['kolmi shak', 'water spinach'], emoji: '🥬', unit: 'আঁটি', category: 'শাকসবজি' },
+  { name: 'কচুর লতি', banglish: ['kochur loti', 'loti'], emoji: '🌿', unit: 'আঁটি', category: 'শাকসবজি' },
+  { name: 'সজনা ডাঁটা', banglish: ['sojna', 'drumstick'], emoji: '🌿', unit: 'আঁটি', category: 'শাকসবজি' },
+  { name: 'চিচিঙ্গা', banglish: ['chichinga', 'snake gourd'], emoji: '🥒', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'ঝিঙে', banglish: ['jhinge', 'ridge gourd'], emoji: '🌿', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'কাঁকরোল', banglish: ['kakrol', 'spiny gourd'], emoji: '🌿', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'কচু', banglish: ['kochu', 'taro'], emoji: '🌿', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'মূলা', banglish: ['mula', 'radish'], emoji: '🫚', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'সিম', banglish: ['shim', 'beans'], emoji: '🫘', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'বরবটি', banglish: ['barboti'], emoji: '🌿', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'মিষ্টি আলু', banglish: ['mishti alu', 'sweet potato'], emoji: '🍠', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'পেঁপে (কাঁচা)', banglish: ['pepe', 'papaya'], emoji: '🍈', unit: 'কেজি', category: 'শাকসবজি' },
+  { name: 'ধনে পাতা', banglish: ['dhone pata', 'coriander'], emoji: '🌿', unit: 'আঁটি', category: 'শাকসবজি' },
 
-  // ──── ফলমূল ────
-  { name: 'কলা', banglish: ['kola', 'kola mach', 'banana', 'kela'], emoji: '🍌', unit: 'হালি', category: 'ফলমূল' },
+  // ──── ফলমূল (Fruits) ────
+  { name: 'কলা', banglish: ['kola', 'banana'], emoji: '🍌', unit: 'হালি', category: 'ফলমূল' },
   { name: 'আম', banglish: ['aam', 'am', 'mango'], emoji: '🥭', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'আপেল', banglish: ['apple', 'apal', 'apel'], emoji: '🍎', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'কমলা', banglish: ['komla', 'komola', 'orange'], emoji: '🍊', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'আনারস', banglish: ['anaros', 'ananas', 'pineapple'], emoji: '🍍', unit: 'পিস', category: 'ফলমূল' },
+  { name: 'কাঁঠাল', banglish: ['kanthal', 'jackfruit'], emoji: '🍈', unit: 'পিস', category: 'ফলমূল' },
+  { name: 'আপেল', banglish: ['apple', 'apel'], emoji: '🍎', unit: 'কেজি', category: 'ফলমূল' },
+  { name: 'কমলা', banglish: ['komla', 'orange'], emoji: '🍊', unit: 'কেজি', category: 'ফলমূল' },
+  { name: 'আনারস', banglish: ['anaros', 'pineapple'], emoji: '🍍', unit: 'পিস', category: 'ফলমূল' },
   { name: 'পেয়ারা', banglish: ['peyara', 'guava'], emoji: '🍐', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'তরমুজ', banglish: ['tormuj', 'watermelon', 'tarbooj'], emoji: '🍉', unit: 'পিস', category: 'ফলমূল' },
-  { name: 'আঙুর', banglish: ['angur', 'angoor', 'grapes'], emoji: '🍇', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'নারিকেল', banglish: ['narikel', 'narkol', 'coconut'], emoji: '🥥', unit: 'পিস', category: 'ফলমূল' },
-  { name: 'লেবু', banglish: ['lebu', 'lemon', 'lime'], emoji: '🍋', unit: 'পিস', category: 'ফলমূল' },
-  { name: 'লিচু', banglish: ['lichu', 'lychee', 'litchi'], emoji: '🍒', unit: 'ডজন', category: 'ফলমূল' },
-  { name: 'জাম', banglish: ['jam', 'java plum', 'black plum'], emoji: '🫐', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'পেঁপে', banglish: ['pepe', 'papaya', 'papita'], emoji: '🍈', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'আমড়া', banglish: ['amra', 'hog plum', 'amora'], emoji: '🍈', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'জলপাই', banglish: ['jolpai', 'olive', 'jalpai'], emoji: '🫒', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'স্ট্রবেরি', banglish: ['strawberry', 'stroberi'], emoji: '🍓', unit: 'কেজি', category: 'ফলমূল' },
-  { name: 'কিউই', banglish: ['kiwi', 'kiwifruit'], emoji: '🥝', unit: 'পিস', category: 'ফলমূল' },
+  { name: 'তরমুজ', banglish: ['tormuj', 'watermelon'], emoji: '🍉', unit: 'পিস', category: 'ফলমূল' },
+  { name: 'আঙুর', banglish: ['angur', 'grapes'], emoji: '🍇', unit: 'কেজি', category: 'ফলমূল' },
+  { name: 'নারিকেল', banglish: ['narikel', 'coconut'], emoji: '🥥', unit: 'পিস', category: 'ফলমূল' },
+  { name: 'লেবু', banglish: ['lebu', 'lemon'], emoji: '🍋', unit: 'পিস', category: 'ফলমূল' },
+  { name: 'লিচু', banglish: ['lichu', 'lychee'], emoji: '🍒', unit: 'ডজন', category: 'ফলমূল' },
+  { name: 'পেঁপে (পাকা)', banglish: ['pepe', 'papaya'], emoji: '🍈', unit: 'কেজি', category: 'ফলমূল' },
+  { name: 'বেল', banglish: ['bel', 'wood apple'], emoji: '🍈', unit: 'পিস', category: 'ফলমূল' },
+  { name: 'বরই', banglish: ['boroi', 'jujube'], emoji: '🍒', unit: 'কেজি', category: 'ফলমূল' },
+  { name: 'সফেদা', banglish: ['sofeda', 'sapodilla'], emoji: '🥔', unit: 'কেজি', category: 'ফলমূল' },
+  { name: 'কামরাঙ্গা', banglish: ['kamranga', 'star fruit'], emoji: '⭐', unit: 'কেজি', category: 'ফলমূল' },
+  { name: 'আতাফল', banglish: ['ata', 'custard apple'], emoji: '🍏', unit: 'পিস', category: 'ফলমূল' },
+  { name: 'ডালিম', banglish: ['dalim', 'pomegranate'], emoji: '🍎', unit: 'কেজি', category: 'ফলমূল' },
+  { name: 'ড্রাগন ফল', banglish: ['dragon fruit'], emoji: '🌵', unit: 'কেজি', category: 'ফলমূল' },
+  { name: 'মাল্টা', banglish: ['malta'], emoji: '🍊', unit: 'কেজি', category: 'ফলমূল' },
 
-  // ──── মাছ ────
-  { name: 'ইলিশ মাছ', banglish: ['ilish', 'hilsha', 'hilsa', 'elish'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'রুই মাছ', banglish: ['rui', 'rohu', 'rui mach'], emoji: '🐠', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'কাতলা মাছ', banglish: ['katla', 'catla'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'চিংড়ি', banglish: ['chingri', 'prawn', 'shrimp', 'chingdi'], emoji: '🦐', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'পাঙ্গাস মাছ', banglish: ['pangas', 'pangus', 'pangash'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'তেলাপিয়া মাছ', banglish: ['tilapia', 'telapia', 'tilapiya'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'শিং মাছ', banglish: ['shing', 'catfish', 'shing mach'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'মাগুর মাছ', banglish: ['magur', 'walking catfish'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'বোয়াল মাছ', banglish: ['boal', 'wallago', 'boyal'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'পাবদা মাছ', banglish: ['pabda', 'pabda fish'], emoji: '🐡', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'ট্যাংরা মাছ', banglish: ['tengra', 'tangra', 'tenra'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'ভেটকি মাছ', banglish: ['bhetki', 'baramundi', 'vetki'], emoji: '🐠', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'কই মাছ', banglish: ['koi', 'climbing perch', 'koi mach'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'শোল মাছ', banglish: ['shol', 'snakehead', 'shol mach'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'মলা মাছ', banglish: ['mola', 'mola fish', 'mola mach'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'চিতল মাছ', banglish: ['chital', 'featherback'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'রক্তচোষা মাছ (শুঁটকি)', banglish: ['shutki', 'dried fish', 'shuktki'], emoji: '🐠', unit: 'গ্রাম', category: 'মাছ/মাংস' },
+  // ──── মাছ ও মাংস (Fish & Meat) ────
+  { name: 'ইলিশ মাছ', banglish: ['ilish', 'hilsa'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'রুই মাছ', banglish: ['rui', 'rohu'], emoji: '🐠', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'কাতলা মাছ', banglish: ['katla'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'চingড়ি', banglish: ['chingri', 'prawn', 'shrimp'], emoji: '🦐', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'পাঙ্গাস মাছ', banglish: ['pangas'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'তেলাপিয়া মাছ', banglish: ['tilapia'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'বোয়াল মাছ', banglish: ['boal'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'পাবদা মাছ', banglish: ['pabda'], emoji: '🐡', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'ট্যাংরা মাছ', banglish: ['tengra'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'মাগুর মাছ', banglish: ['magur'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'শিং মাছ', banglish: ['shing'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'কই মাছ', banglish: ['koi'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'শোল মাছ', banglish: ['shol'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'ভেটকি মাছ', banglish: ['bhetki'], emoji: '🐠', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'লোইট্টা মাছ', banglish: ['loitta'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'বাইম মাছ', banglish: ['baim'], emoji: '🐍', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'কাচকি মাছ', banglish: ['kachki'], emoji: '🐟', unit: 'গ্রাম', category: 'মাছ/মাংস' },
+  { name: 'মলা মাছ', banglish: ['mola'], emoji: '🐟', unit: 'গ্রাম', category: 'মাছ/মাংস' },
+  { name: 'রুপচাঁদা মাছ', banglish: ['rupchanda'], emoji: '🐠', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'আইড় মাছ', banglish: ['air'], emoji: '🐟', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'মুরগির মাংস (ব্রয়লার)', banglish: ['murgi', 'chicken', 'broiler'], emoji: '🍗', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'মুরগির মাংস (দেশি)', banglish: ['deshi murgi'], emoji: '🐔', unit: 'পিস', category: 'মাছ/মাংস' },
+  { name: 'গরুর মাংস', banglish: ['goru', 'beef'], emoji: '🥩', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'খাসির মাংস', banglish: ['khashi', 'mutton'], emoji: '🍖', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'হাঁসের মাংস', banglish: ['hans', 'duck'], emoji: '🦆', unit: 'কেজি', category: 'মাছ/মাংস' },
+  { name: 'কোয়েল পাখি', banglish: ['koel'], emoji: '🐦', unit: 'পিস', category: 'মাছ/মাংস' },
 
-  // ──── মাংস ────
-  { name: 'মুরগির মাংস', banglish: ['murgi', 'chicken', 'broiler', 'murga'], emoji: '🍗', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'গরুর মাংস', banglish: ['goru', 'gorur mangso', 'beef', 'goru mash'], emoji: '🥩', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'খাসির মাংস', banglish: ['khashi', 'khasir mangso', 'mutton', 'goat', 'khasi'], emoji: '🍖', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'হাঁসের মাংস', banglish: ['hans', 'duck', 'hasher mangso', 'hash'], emoji: '🦆', unit: 'কেজি', category: 'মাছ/মাংস' },
-  { name: 'দেশি মুরগি', banglish: ['deshi murgi', 'country chicken', 'desi chicken'], emoji: '🐔', unit: 'পিস', category: 'মাছ/মাংস' },
-  { name: 'মুরগির লিভার', banglish: ['chicken liver', 'liver', 'liver pieces'], emoji: '🍗', unit: 'কেজি', category: 'মাছ/মাংস' },
+  // ──── দুগ্ধজাত (Dairy) ────
+  { name: 'ডিম (মুরগি)', banglish: ['dim', 'egg'], emoji: '🥚', unit: 'হালি', category: 'দুগ্ধজাত' },
+  { name: 'ডিম (হাঁস)', banglish: ['hasher dim'], emoji: '🥚', unit: 'হালি', category: 'দুগ্ধজাত' },
+  { name: 'দুধ (তরল)', banglish: ['dudh', 'milk'], emoji: '🥛', unit: 'লিটার', category: 'দুগ্ধজাত' },
+  { name: 'দুধ (পাউডার)', banglish: ['powder milk', 'dano', 'marks'], emoji: '🥛', unit: 'গ্রাম', category: 'দুগ্ধজাত' },
+  { name: 'দই (মিষ্টি)', banglish: ['doi', 'sweet yogurt'], emoji: '🍶', unit: 'কেজি', category: 'দুগ্ধজাত' },
+  { name: 'দই (টক)', banglish: ['tok doi'], emoji: '🍶', unit: 'কেজি', category: 'দুগ্ধজাত' },
+  { name: 'মাখন', banglish: ['makhon', 'butter'], emoji: '🧈', unit: 'গ্রাম', category: 'দুগ্ধজাত' },
+  { name: 'পনির', banglish: ['ponir', 'cheese'], emoji: '🧀', unit: 'গ্রাম', category: 'দুগ্ধজাত' },
+  { name: 'ঘি', banglish: ['ghee'], emoji: '🫙', unit: 'গ্রাম', category: 'দুগ্ধজাত' },
+  { name: 'মিষ্টি (রশগোল্লা)', banglish: ['roshogolla', 'sweets'], emoji: '🍮', unit: 'কেজি', category: 'দুগ্ধজাত' },
+  { name: 'মিষ্টি (চমচম)', banglish: ['chomchom'], emoji: '🍮', unit: 'কেজি', category: 'দুগ্ধজাত' },
 
-  // ──── ডিম ও দুগ্ধজাত ────
-  { name: 'ডিম', banglish: ['dim', 'egg', 'eggs', 'deem'], emoji: '🥚', unit: 'হালি', category: 'দুগ্ধজাত' },
-  { name: 'দুধ', banglish: ['doodh', 'dudh', 'milk', 'dud'], emoji: '🥛', unit: 'লিটার', category: 'দুগ্ধজাত' },
-  { name: 'দই', banglish: ['doi', 'yogurt', 'curd', 'dahi'], emoji: '🍶', unit: 'গ্রাম', category: 'দুগ্ধজাত' },
-  { name: 'মাখন', banglish: ['makhon', 'butter', 'makhan'], emoji: '🧈', unit: 'গ্রাম', category: 'দুগ্ধজাত' },
-  { name: 'পনির', banglish: ['ponir', 'cheese', 'paneer', 'panir'], emoji: '🧀', unit: 'গ্রাম', category: 'দুগ্ধজাত' },
-  { name: 'ঘি', banglish: ['ghee', 'ghi', 'clarified butter'], emoji: '🫙', unit: 'গ্রাম', category: 'দুগ্ধজাত' },
-  { name: 'ছানা', banglish: ['chhana', 'chhena', 'fresh paneer'], emoji: '🍶', unit: 'গ্রাম', category: 'দুগ্ধজাত' },
-  { name: 'কনডেন্সড মিল্ক', banglish: ['condensed milk', 'milkmaid', 'tinn doodh'], emoji: '🥛', unit: 'টিন', category: 'দুগ্ধজাত' },
+  // ──── শুকনো পণ্য (Groceries/Dry) ────
+  { name: 'চাল (নাজিরশাইল)', banglish: ['nazirshail', 'rice'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'চাল (মিনিকেট)', banglish: ['miniket', 'chal'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'চাল (পোলাও)', banglish: ['chinigura', 'polao chal'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'আটা', banglish: ['ata', 'flour'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'ময়দা', banglish: ['moida', 'maida'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'সুজি', banglish: ['shuji'], emoji: '🌾', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
+  { name: 'মসুর ডাল', banglish: ['mashur dal'], emoji: '🫘', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'মুগ ডাল', banglish: ['mug dal'], emoji: '🫘', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'ছোলা', banglish: ['chhola'], emoji: '🫘', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'সয়াবিন তেল', banglish: ['soybeal tel'], emoji: '🫙', unit: 'লিটার', category: 'শুকনো পণ্য' },
+  { name: 'সরিষার তেল', banglish: ['sorisar tel'], emoji: '🫙', unit: 'লিটার', category: 'শুকনো পণ্য' },
+  { name: 'চিনি', banglish: ['chini', 'sugar'], emoji: '🍬', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'লবণ', banglish: ['lobon', 'salt'], emoji: '🧂', unit: 'প্যাকেট', category: 'শুকনো পণ্য' },
+  { name: 'গুড়', banglish: ['gur'], emoji: '🍯', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'মুড়ি', banglish: ['muri'], emoji: '⚪', unit: 'কেজি', category: 'শুকনো পণ্য' },
+  { name: 'চিড়া', banglish: ['chira'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
 
-  // ──── চাল, ডাল, শুকনো পণ্য ────
-  { name: 'চাল', banglish: ['chal', 'chaol', 'rice', 'chawl', 'cha l'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'আটা', banglish: ['ata', 'flour', 'wheat flour', 'atta'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'ময়দা', banglish: ['moida', 'maida', 'all purpose flour', 'moeda'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'সুজি', banglish: ['shuji', 'suji', 'semolina', 'rawa'], emoji: '🌾', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
-  { name: 'চিড়া', banglish: ['chira', 'chiray', 'flattened rice', 'poha'], emoji: '🌾', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'মুড়ি', banglish: ['muri', 'muree', 'puffed rice'], emoji: '⚪', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
-  { name: 'মসুর ডাল', banglish: ['mashur dal', 'masoor dal', 'red lentil', 'msur'], emoji: '🫘', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'মুগ ডাল', banglish: ['mug dal', 'moong dal', 'green lentil', 'moog'], emoji: '🫘', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'ছোলার ডাল', banglish: ['chholar dal', 'chana dal', 'chickpea dal', 'chhola dal'], emoji: '🫘', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'খেসারি ডাল', banglish: ['kheshari', 'khesari dal', 'grass pea'], emoji: '🫘', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'ডাল', banglish: ['dal', 'daal', 'lentil', 'dak'], emoji: '🫘', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'ছোলা', banglish: ['chhola', 'chola', 'chickpeas', 'chana'], emoji: '🫘', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'সয়াবিন তেল', banglish: ['shoyabin', 'soybean oil', 'tel', 'soyabin tel'], emoji: '🫙', unit: 'লিটার', category: 'শুকনো পণ্য' },
-  { name: 'সরিষার তেল', banglish: ['sorisar tel', 'mustard oil', 'sorisa tel', 'sorisor'], emoji: '🫙', unit: 'লিটার', category: 'শুকনো পণ্য' },
-  { name: 'নারিকেল তেল', banglish: ['narikel tel', 'coconut oil', 'narkol tel'], emoji: '🥥', unit: 'লিটার', category: 'শুকনো পণ্য' },
-  { name: 'চিনি', banglish: ['chini', 'sugar', 'chena'], emoji: '🍬', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'গুড়', banglish: ['gur', 'guro', 'molasses', 'jaggery'], emoji: '🍯', unit: 'কেজি', category: 'শুকনো পণ্য' },
-  { name: 'লবণ', banglish: ['lobon', 'noon', 'salt', 'noone', 'loban'], emoji: '🧂', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
-  { name: 'মধু', banglish: ['modhu', 'honey', 'modu'], emoji: '🍯', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
-  { name: 'কিসমিস', banglish: ['kishmish', 'raisin', 'kismis'], emoji: '🍇', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
-  { name: 'কাঠবাদাম', banglish: ['kath badam', 'almond', 'kathabadam'], emoji: '🥜', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
-  { name: 'চিনেবাদাম', banglish: ['chine badam', 'peanut', 'groundnut', 'chine'], emoji: '🥜', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
-  { name: 'কাজু বাদাম', banglish: ['kaju', 'cashew', 'kaju badam'], emoji: '🥜', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
+  // ──── মশলা (Spices) ────
+  { name: 'হলুদ গুঁড়া', banglish: ['holud'], emoji: '🟡', unit: 'গ্রাম', category: 'মশলা' },
+  { name: 'মরিচ গুঁড়া', banglish: ['morich'], emoji: '🌶️', unit: 'গ্রাম', category: 'মশলা' },
+  { name: 'জিরা গুঁড়া', banglish: ['jira'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
+  { name: 'ধনে গুঁড়া', banglish: ['dhone'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
+  { name: 'এলাচ', banglish: ['elach'], emoji: '💚', unit: 'গ্রাম', category: 'মশলা' },
+  { name: 'দারুচিনি', banglish: ['daruchini'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
+  { name: 'লবঙ্গ', banglish: ['lobongo'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
+  { name: 'তেজপাতা', banglish: ['tejpata'], emoji: '🍃', unit: 'আঁটি', category: 'মশলা' },
+  { name: 'গরম মসলা', banglish: ['garam masala'], emoji: '⭐', unit: 'গ্রাম', category: 'মশলা' },
+  { name: 'পাঁচ ফোড়ন', banglish: ['panch phoron'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
 
-  // ──── মশলা ────
-  { name: 'হলুদ গুঁড়া', banglish: ['holud', 'turmeric', 'holud gura', 'halud'], emoji: '🟡', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'মরিচের গুঁড়া', banglish: ['morich gura', 'chili powder', 'red chili'], emoji: '🌶️', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'জিরা', banglish: ['jira', 'cumin', 'jeera', 'jara'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'ধনে গুঁড়া', banglish: ['dhone', 'coriander', 'dhania', 'dhaniya'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'এলাচ', banglish: ['elach', 'cardamom', 'elaichi', 'elaach'], emoji: '💚', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'দারুচিনি', banglish: ['daruchini', 'cinnamon', 'darochini'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'লবঙ্গ', banglish: ['lobongo', 'clove', 'laung', 'lobog'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'তেজপাতা', banglish: ['tejpata', 'bay leaf', 'tejpatta'], emoji: '🍃', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'গোলমরিচ', banglish: ['gol morich', 'black pepper', 'pepper', 'golmorich'], emoji: '⚫', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'গরম মসলা', banglish: ['gorom mashla', 'garam masala', 'masala', 'gorom'], emoji: '⭐', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'কালো জিরা', banglish: ['kalo jira', 'nigella', 'kalonji', 'kalojira'], emoji: '🌑', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'মেথি', banglish: ['methi', 'fenugreek'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'পাঁচ ফোড়ন', banglish: ['panch phoron', 'five spice', 'panch foron'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'কারি পাউডার', banglish: ['curry', 'curry powder', 'kari'], emoji: '🍛', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'সরিষা', banglish: ['sorisha', 'mustard seed', 'sorshe'], emoji: '🟡', unit: 'গ্রাম', category: 'মশলা' },
-  { name: 'টমেটো সস', banglish: ['tomato sauce', 'ketchup', 'sauce'], emoji: '🍅', unit: 'বোতল', category: 'মশলা' },
-  { name: 'সয়া সস', banglish: ['soy sauce', 'soya sauce', 'soja sas'], emoji: '🫙', unit: 'বোতল', category: 'মশলা' },
+  // ──── ফাস্টফুড (Fast Food) ────
+  { name: 'চিকেন বার্গার', banglish: ['burger', 'chicken burger'], emoji: '🍔', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'বিফ বার্গার', banglish: ['beef burger'], emoji: '🍔', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'নাগা বার্গার', banglish: ['naga burger'], emoji: '🍔', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'চীজ বার্গার', banglish: ['cheese burger'], emoji: '🍔', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'চিকেন পিজ্জা', banglish: ['pizza'], emoji: '🍕', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'বিফ পিজ্জা', banglish: ['beef pizza'], emoji: '🍕', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'ফ্রাইড চিকেন', banglish: ['fried chicken', 'bfc', 'kfc'], emoji: '🍗', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'চিকেন ফ্রাই', banglish: ['chicken fry'], emoji: '🍗', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'চিকেন নাগেটস', banglish: ['nuggets'], emoji: '🍗', unit: 'প্যাকেট', category: 'ফাস্টফুড' },
+  { name: 'ফ্রেঞ্চ ফ্রাই', banglish: ['french fry', 'chips'], emoji: '🍟', unit: 'বক্স', category: 'ফাস্টফুড' },
+  { name: 'চিকেন রোল', banglish: ['chicken roll'], emoji: '🌯', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'বিফ রোল', banglish: ['beef roll'], emoji: '🌯', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'স্যান্ডউইচ', banglish: ['sandwich'], emoji: '🥪', unit: 'পিস', category: 'ফাস্টফুড' },
+  { name: 'নুডলস (প্যাকেট)', banglish: ['maggi', 'mister', 'noodles'], emoji: '🍜', unit: 'প্যাকেট', category: 'ফাস্টফুড' },
 
-  // ──── বেকারি ও প্যাকেটজাত ────
-  { name: 'পাউরুটি', banglish: ['pauruti', 'bread', 'loaf', 'pawruti'], emoji: '🍞', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'বিস্কুট', banglish: ['biscuit', 'biscut', 'biscoot'], emoji: '🍪', unit: 'প্যাকেট', category: 'অন্যান্য' },
-  { name: 'কেক', banglish: ['cake', 'caek'], emoji: '🎂', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'চকলেট', banglish: ['chocolate', 'choclate', 'chocolot'], emoji: '🍫', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'চিপস', banglish: ['chips', 'crips'], emoji: '🍟', unit: 'প্যাকেট', category: 'অন্যান্য' },
-  { name: 'নুডলস', banglish: ['noodles', 'noddles', 'nudles'], emoji: '🍜', unit: 'প্যাকেট', category: 'অন্যান্য' },
-  { name: 'ওটস', banglish: ['oats', 'oat', 'oatmeal'], emoji: '🌾', unit: 'গ্রাম', category: 'অন্যান্য' },
-  { name: 'কর্নফ্লেক্স', banglish: ['cornflakes', 'corn flakes', 'breakfast'], emoji: '🌽', unit: 'প্যাকেট', category: 'অন্যান্য' },
-  { name: 'মিষ্টি (মিষ্টান্ন)', banglish: ['mishti', 'sweet', 'mithai', 'roshogolla'], emoji: '🍮', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'আইসক্রিম', banglish: ['ice cream', 'icecream', 'aiskrim'], emoji: '🍦', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'বার্গার', banglish: ['burger', 'borgar'], emoji: '🍔', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'পিজ্জা', banglish: ['pizza', 'piza'], emoji: '🍕', unit: 'পিস', category: 'অন্যান্য' },
+  // ──── রান্না করা খাবার (Cooked Dishes) ────
+  { name: 'কাচ্চি বিরিয়ানি', banglish: ['kacchi', 'biryani'], emoji: '🍛', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'তেহারি', banglish: ['tehari'], emoji: '🍛', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'মোরগ পোলাও', banglish: ['morog polao'], emoji: '🍗', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'চিকেন বিরিয়ানি', banglish: ['chicken biryani'], emoji: '🍛', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'বিফ বিরিয়ানি', banglish: ['beef biryani'], emoji: '🍛', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'ভুনা খিচুড়ি', banglish: ['bhuna khichuri'], emoji: '🍲', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'পাতলা খিচুড়ি', banglish: ['patla khichuri'], emoji: '🥣', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'আলু ভর্তা', banglish: ['aloo bhorta'], emoji: '🥔', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'বেগুন ভর্তা', banglish: ['begun bhorta'], emoji: '🍆', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'শুঁটকি ভর্তা', banglish: ['shutki bhorta'], emoji: '🐟', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'ডাল ভর্তা', banglish: ['dal bhorta'], emoji: '🫘', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'সরিষা ইলিশ', banglish: ['shorshe ilish'], emoji: '🐟', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'হালিম', banglish: ['haleem'], emoji: '🥣', unit: 'বাটি', category: 'রান্না করা খাবার' },
+  { name: 'নেহারি', banglish: ['nehari'], emoji: '🥣', unit: 'বাটি', category: 'রান্না করা খাবার' },
 
-  // ──── পানীয় ────
-  { name: 'চা', banglish: ['cha', 'tea', 'chai', 'chaay'], emoji: '🍵', unit: 'গ্রাম', category: 'অন্যান্য' },
-  { name: 'কফি', banglish: ['coffee', 'kofi', 'coffe'], emoji: '☕', unit: 'গ্রাম', category: 'অন্যান্য' },
-  { name: 'হরলিক্স', banglish: ['horlicks', 'horlix', 'horlic'], emoji: '🥛', unit: 'গ্রাম', category: 'অন্যান্য' },
-  { name: 'বোর্নভিটা', banglish: ['bornvita', 'bournvita', 'milo', 'bournovita'], emoji: '🥛', unit: 'গ্রাম', category: 'অন্যান্য' },
-  { name: 'ফলের রস', banglish: ['juice', 'folor rosh', 'fruit juice', 'rosh'], emoji: '🧃', unit: 'লিটার', category: 'অন্যান্য' },
-  { name: 'সফট ড্রিংক', banglish: ['soft drink', 'cola', 'pepsi', 'coke', 'fanta'], emoji: '🥤', unit: 'বোতল', category: 'অন্যান্য' },
-  { name: 'পানি', banglish: ['pani', 'water', 'bottled water'], emoji: '💧', unit: 'লিটার', category: 'অন্যান্য' },
-  { name: 'এনার্জি ড্রিংক', banglish: ['energy drink', 'redbull', 'tiger'], emoji: '⚡', unit: 'বোতল', category: 'অন্যান্য' },
+  // ──── রাস্তার খাবার (Street Food) ────
+  { name: 'ফুচকা', banglish: ['fuchka', 'puchka'], emoji: '🥣', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'চটপটি', banglish: ['chotpoti'], emoji: '🍲', unit: 'প্লেট', category: 'রান্না করা খাবার' },
+  { name: 'সিঙ্গারা', banglish: ['singara'], emoji: '🥟', unit: 'পিস', category: 'রান্না করা খাবার' },
+  { name: 'সমুচা', banglish: ['samosa'], emoji: '📐', unit: 'পিস', category: 'রান্না করা খাবার' },
+  { name: 'পিয়াজু', banglish: ['piyaju'], emoji: '🧅', unit: 'হালি', category: 'রান্না করা খাবার' },
+  { name: 'আলুর চপ', banglish: ['alur chop'], emoji: '🥔', unit: 'হালি', category: 'রান্না করা খাবার' },
+  { name: 'বেগুনী', banglish: ['beguni'], emoji: '🍆', unit: 'হালি', category: 'রান্না করা খাবার' },
+  { name: 'মোগলাই পরোটা', banglish: ['mughlai'], emoji: '🍳', unit: 'পিস', category: 'রান্না করা খাবার' },
 
-  // ──── পরিষ্কার-পরিচ্ছন্নতা ────
-  { name: 'সাবান', banglish: ['shabon', 'sabon', 'soap', 'shoban'], emoji: '🧼', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'শ্যাম্পু', banglish: ['shampoo', 'shampu', 'sampoo'], emoji: '🧴', unit: 'বোতল', category: 'অন্যান্য' },
-  { name: 'কন্ডিশনার', banglish: ['conditioner', 'kondisoner', 'hair conditioner'], emoji: '🧴', unit: 'বোতল', category: 'অন্যান্য' },
-  { name: 'টুথপেস্ট', banglish: ['toothpaste', 'tooth paste', 'toothpaste', 'pepsodent'], emoji: '🪥', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'টুথব্রাশ', banglish: ['toothbrush', 'tooth brush', 'brash'], emoji: '🪥', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'ডিটারজেন্ট', banglish: ['detergent', 'detarjent', 'washing powder', 'rim'], emoji: '🧺', unit: 'কেজি', category: 'অন্যান্য' },
-  { name: 'ডিশওয়াশ', banglish: ['dishwash', 'vim', 'dish soap', 'dishwash bar'], emoji: '🍽️', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'টিস্যু পেপার', banglish: ['tissue', 'tissue paper', 'tishu'], emoji: '🧻', unit: 'প্যাকেট', category: 'অন্যান্য' },
-  { name: 'মশার কয়েল', banglish: ['mosha coil', 'mosquito coil', 'coil'], emoji: '🌀', unit: 'প্যাকেট', category: 'অন্যান্য' },
-  { name: 'স্যানিটারি ন্যাপকিন', banglish: ['sanitary', 'napkin', 'pad', 'whisper'], emoji: '🩹', unit: 'প্যাকেট', category: 'অন্যান্য' },
-  { name: 'ফেসওয়াশ', banglish: ['facewash', 'face wash', 'fesowash'], emoji: '🧴', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'বডি লোশন', banglish: ['lotion', 'body lotion', 'mositurizer'], emoji: '🧴', unit: 'বোতল', category: 'অন্যান্য' },
-  { name: 'ডিওডোরেন্ট', banglish: ['deodorant', 'deo', 'perfume spray'], emoji: '💨', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'রেজার/ব্লেড', banglish: ['razor', 'blade', 'rayzor'], emoji: '🪒', unit: 'পিস', category: 'অন্যান্য' },
-  { name: 'পেস্টিসাইড স্প্রে', banglish: ['pesticide', 'spray', 'insecticide', 'good knight'], emoji: '🌿', unit: 'বোতল', category: 'অন্যান্য' },
-
-  // ──── বিবিধ রান্নার উপকরণ ────
-  { name: 'ভিনেগার', banglish: ['vinegar', 'sirka', 'sirca'], emoji: '🫙', unit: 'বোতল', category: 'শুকনো পণ্য' },
-  { name: 'বেকিং পাউডার', banglish: ['baking powder', 'baking', 'beking'], emoji: '🫙', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
-  { name: 'ইস্ট', banglish: ['yeast', 'ist', 'east'], emoji: '🫙', unit: 'গ্রাম', category: 'শুকনো পণ্য' },
-  { name: 'নারিকেল দুধ', banglish: ['coconut milk', 'narikel doodh', 'narkol dud'], emoji: '🥥', unit: 'টিন', category: 'শুকনো পণ্য' },
+  // ──── পানীয় ও বিবিধ ────
+  { name: 'সাবান (গায় মাখার)', banglish: ['lux', 'lifebuoy', 'dettol', 'sabon', 'soap'], emoji: '🧼', unit: 'পিস', category: 'অন্যান্য' },
+  { name: 'লাক্স সাবান', banglish: ['lux'], emoji: '🧼', unit: 'পিস', category: 'অন্যান্য' },
+  { name: 'লাইফবয় সাবান', banglish: ['lifebuoy', 'lifebuoy saban'], emoji: '🧼', unit: 'পিস', category: 'অন্যান্য' },
+  { name: 'স্যান্ডিনা সাবান', banglish: ['sandina', 'sundina'], emoji: '🧼', unit: 'পিস', category: 'অন্যান্য' },
+  { name: 'রিন পাউডার', banglish: ['rin', 'rin powder', 'detergent'], emoji: '🧺', unit: 'কেজি', category: 'অন্যান্য' },
+  { name: 'হুইল সাবান', banglish: ['wheel', 'wheel saban', 'dhua saban'], emoji: '🧼', unit: 'পিস', category: 'অন্যান্য' },
+  { name: 'কাপড় ধোয়ার সাবান', banglish: ['detergent soap', 'saban', 'dhua saban'], emoji: '🧼', unit: 'পিস', category: 'অন্যান্য' },
+  { name: 'সার্ফ এক্সেল', banglish: ['surf excel'], emoji: '🧺', unit: 'কেজি', category: 'অন্যান্য' },
+  { name: 'ভিম বার', banglish: ['vim bar', 'dish soap'], emoji: '🧼', unit: 'পিস', category: 'অন্যান্য' },
+  { name: 'ভিম লিকুইড', banglish: ['vim liquid'], emoji: '🧴', unit: 'বোতল', category: 'অন্যান্য' },
+  { name: 'হারপিক', banglish: ['harpic'], emoji: '🧴', unit: 'বোতল', category: 'অন্যান্য' },
+  { name: 'স্যাভলন', banglish: ['savlon'], emoji: '🧴', unit: 'বোতল', category: 'অন্যান্য' },
+  { name: 'ডেটল', banglish: ['dettol'], emoji: '🧴', unit: 'বোতল', category: 'অন্যান্য' },
+  { name: 'ধনিয়া', banglish: ['dhania', 'donia'], emoji: '🌿', unit: 'গ্রাম', category: 'মশলা' },
+  { name: 'ধনে পাতা', banglish: ['dhone pata', 'donia pata', 'coriander'], emoji: '🌿', unit: 'আঁটি', category: 'শাকসবজি' },
+  { name: 'শ্যাম্পু', banglish: ['shampoo', 'sunsilk', 'dove'], emoji: '🧴', unit: 'বোতল', category: 'অন্যান্য' },
+  { name: 'ডিটারজেন্ট', banglish: ['detergent'], emoji: '🧺', unit: 'কেজি', category: 'অন্যান্য' },
+  { name: 'টিস্যু', banglish: ['tissue'], emoji: '🧻', unit: 'প্যাকেট', category: 'অন্যান্য' },
+  { name: 'মশার কyeল', banglish: ['coil'], emoji: '🌀', unit: 'প্যাকেট', category: 'অন্যান্য' },
 ];
 
 // All refs from SMART_ITEMS now use GROCERY_DB
@@ -280,6 +293,8 @@ const BAZAR_CATEGORIES = [
   { id: 'দুগ্ধজাত', emoji: '🥛', color: 'sky' },
   { id: 'শুকনো পণ্য', emoji: '🌾', color: 'amber' },
   { id: 'মশলা', emoji: '🌶️', color: 'orange' },
+  { id: 'ফাস্টফুড', emoji: '🍔', color: 'pink' },
+  { id: 'রান্না করা খাবার', emoji: '🍱', color: 'indigo' },
   { id: 'অন্যান্য', emoji: '📦', color: 'slate' },
 ];
 const PRIORITIES = [
@@ -403,6 +418,7 @@ export default function AppOverview() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [profile, setProfile] = useState<Profile>({});
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Modal form state
   const [formType, setFormType] = useState<TransactionType>('expense');
@@ -509,9 +525,15 @@ export default function AppOverview() {
   useEffect(() => {
     setMounted(true);
     const check = async () => {
+      setIsCheckingAuth(true);
       const { data } = await insforge.auth.getCurrentUser();
-      if (!data.user) { router.push('/'); return; }
-      fetchAll();
+      if (!data.user) { 
+        router.push('/'); 
+      } else {
+        setCurrentUser(data.user);
+        fetchAll();
+      }
+      setIsCheckingAuth(false);
     };
     check();
     const refresh = () => fetchAll();
@@ -549,7 +571,11 @@ export default function AppOverview() {
   const handleEditTodo = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); const fm = new FormData(e.currentTarget);
     if (!editTodoModal) return;
-    await insforge.database.from('todos').update({ text: fm.get('text') }).eq('id', editTodoModal.id);
+    const targetDate = fm.get('target_date') ? new Date(fm.get('target_date') as string).toISOString() : null;
+    await insforge.database.from('todos').update({ 
+      text: fm.get('text'),
+      target_date: targetDate
+    }).eq('id', editTodoModal.id);
     setEditTodoModal(null); await fetchAll();
   };
 
@@ -1048,6 +1074,14 @@ export default function AppOverview() {
         </header>
 
         <div className="max-w-[1200px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 lg:space-y-10 pb-28 lg:pb-16">
+          {isCheckingAuth && (
+            <div className="fixed inset-0 z-[200] bg-[#F9F4F0]/80 backdrop-blur-md flex items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="w-10 h-10 animate-spin text-[#B45309]" />
+                <p className="font-black text-[#B45309] uppercase tracking-widest text-xs">অপেক্ষা করুন...</p>
+              </div>
+            </div>
+          )}
 
           {/* ══════════════ DASHBOARD ══════════════ */}
           {activeTab === 'dashboard' && (
@@ -1583,19 +1617,19 @@ export default function AppOverview() {
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="p-4 bg-[#18181B] dark:bg-zinc-900 rounded-[24px] text-center text-white shadow-xl">
-                    <p className="text-[9px] font-black text-[#B45309] uppercase tracking-widest mb-1">মোট আইটেম</p>
+                    <p className="text-sm font-black text-[#B45309] uppercase tracking-widest mb-1">মোট আইটেম</p>
                     <p className="text-3xl font-black">{todos.length}</p>
                   </div>
                   <div className="p-4 bg-white dark:bg-zinc-950 border border-emerald-200 dark:border-emerald-800/30 rounded-[24px] text-center shadow-sm">
-                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">কেনা হয়েছে</p>
+                    <p className="text-sm font-black text-emerald-600 uppercase tracking-widest mb-1">কেনা হয়েছে</p>
                     <p className="text-3xl font-black text-emerald-600">{completedTodos.length}</p>
                   </div>
                   <div className="p-4 bg-white dark:bg-zinc-950 border border-amber-200 dark:border-amber-800/30 rounded-[24px] text-center shadow-sm">
-                    <p className="text-[9px] font-black text-[#B45309] uppercase tracking-widest mb-1">আনুমানিক</p>
+                    <p className="text-sm font-black text-[#B45309] uppercase tracking-widest mb-1">আনুমানিক</p>
                     <p className="text-2xl font-black">{currency}{totalEstimated.toLocaleString()}</p>
                   </div>
                   <div className="p-4 bg-white dark:bg-zinc-950 border border-[#B45309]/20 rounded-[24px] text-center shadow-sm">
-                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">মোট খরচ</p>
+                    <p className="text-sm font-black text-emerald-600 uppercase tracking-widest mb-1">মোট খরচ</p>
                     <p className="text-2xl font-black text-emerald-600">{currency}{totalActualSpent.toLocaleString()}</p>
                   </div>
                 </div>
@@ -1614,9 +1648,9 @@ export default function AppOverview() {
 
                 {/* Category Filter */}
                 <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                  <button onClick={() => setBazarCatFilter('all')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 ${bazarCatFilter === 'all' ? 'bg-[#18181B] dark:bg-white text-white dark:text-black' : 'bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 text-slate-500'}`}>🛒 সব</button>
+                  <button onClick={() => setBazarCatFilter('all')} style={{ fontSize: '24px', padding: '16px 32px' }} className={`rounded-2xl font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 ${bazarCatFilter === 'all' ? 'bg-[#18181B] dark:bg-white text-white dark:text-black shadow-2xl shadow-[#18181B]/30' : 'bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 text-slate-500 hover:bg-slate-50'}`}>🛒 সব</button>
                   {BAZAR_CATEGORIES.map(c => (
-                    <button key={c.id} onClick={() => setBazarCatFilter(c.id)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 ${bazarCatFilter === c.id ? 'bg-[#18181B] dark:bg-white text-white dark:text-black' : 'bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 text-slate-500'}`}>{c.emoji} {c.id}</button>
+                    <button key={c.id} onClick={() => setBazarCatFilter(c.id)} style={{ fontSize: '24px', padding: '16px 32px' }} className={`rounded-2xl font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 ${bazarCatFilter === c.id ? 'bg-[#18181B] dark:bg-white text-white dark:text-black shadow-2xl shadow-[#18181B]/30' : 'bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 text-slate-500 hover:bg-slate-50'}`}>{c.emoji} {c.id}</button>
                   ))}
                 </div>
 
@@ -1667,16 +1701,22 @@ export default function AppOverview() {
                             <Check className="w-5 h-5 group-hover/btn:text-white text-transparent transition-all" />
                           </button>
                           <span className="text-xl flex-shrink-0">{smartItem?.emoji || cat?.emoji || '📦'}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-black text-[#18181B] dark:text-white/95">{t.text}</p>
-                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                           <div className="flex-1 min-w-0">
+                            <p style={{ fontSize: '24px' }} className="font-black text-[#18181B] dark:text-white/95 leading-tight">{t.text}</p>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
                               {(t.actual_qty || t.quantity) && (
-                                <span className="text-[10px] font-black text-slate-500 bg-[#F9F4F0] dark:bg-zinc-900 px-2 py-0.5 rounded-full">
+                                <span className="text-xs font-black text-slate-500 bg-[#F9F4F0] dark:bg-zinc-900 px-2.5 py-1 rounded-full">
                                   {t.actual_qty || t.quantity} {t.unit || ''}
                                 </span>
                               )}
-                              {t.estimated_price > 0 && <span className="text-[10px] font-black text-[#B45309]">~{currency}{t.estimated_price}</span>}
-                              <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${pr.color}`}>{pr.dot} {pr.label}</span>
+                              {t.estimated_price > 0 && <span className="text-xs font-black text-[#B45309]">~{currency}{t.estimated_price}</span>}
+                              <span className={`text-xs font-black px-2.5 py-1 rounded-full ${pr.color}`}>{pr.dot} {pr.label}</span>
+                              {t.target_date && (
+                                <span className="text-xs font-black text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-full flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {format(parseISO(t.target_date), 'do MMM', { locale: bn })}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <div className="flex opacity-0 group-hover:opacity-100 transition-all gap-1 flex-shrink-0">
@@ -1694,7 +1734,7 @@ export default function AppOverview() {
                   <>
                     <div className="flex items-center gap-3 pt-1">
                       <div className="flex-1 h-px bg-[#B45309]/10" />
-                      <button onClick={() => setShowPurchaseHistory(!showPurchaseHistory)} className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-2 hover:text-[#B45309] transition-colors">
+                      <button onClick={() => setShowPurchaseHistory(!showPurchaseHistory)} className="text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-2 hover:text-[#B45309] transition-colors">
                         {showPurchaseHistory ? '▲' : '▼'} কেনা হয়েছে ({completedTodos.length}টি) · মোট {currency}{totalActualSpent.toLocaleString()}
                       </button>
                       <div className="flex-1 h-px bg-[#B45309]/10" />
@@ -1720,11 +1760,11 @@ export default function AppOverview() {
                                     <span className="text-[10px] font-black text-emerald-600">৳{t.actual_price.toLocaleString()} <span className="font-normal text-slate-400">প্রকৃত</span></span>
                                   )}
                                   {t.estimated_price > 0 && t.actual_price > 0 && t.estimated_price !== t.actual_price && (
-                                    <span className={`text-[10px] font-black ${t.actual_price > t.estimated_price ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                    <span className={`text-xs font-black ${t.actual_price > t.estimated_price ? 'text-rose-500' : 'text-emerald-500'}`}>
                                       {t.actual_price > t.estimated_price ? `+${currency}${t.actual_price - t.estimated_price}` : `-${currency}${t.estimated_price - t.actual_price}`}
                                     </span>
                                   )}
-                                  {t.purchased_at && <span className="text-[10px] text-slate-300 dark:text-zinc-600 font-bold">{t.purchased_at}</span>}
+                                  {t.purchased_at && <span className="text-xs text-slate-300 dark:text-zinc-600 font-bold">{t.purchased_at}</span>}
                                 </div>
                               </div>
                               <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 rounded-xl hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -2518,6 +2558,10 @@ export default function AppOverview() {
                     <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">বিবরণ</label>
                     <input name="text" defaultValue={editTodoModal.text} className={inputCls + " w-full mt-2"} />
                   </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিকল্পিত তারিখ ও সময়</label>
+                    <input name="target_date" type="datetime-local" defaultValue={editTodoModal.target_date ? format(new Date(editTodoModal.target_date), "yyyy-MM-dd'T'HH:mm") : ''} className={inputCls + " w-full mt-2"} />
+                  </div>
                   <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl mt-4">আপডেট করুন</button>
                 </form>
              </div>
@@ -2538,6 +2582,7 @@ export default function AppOverview() {
                 if (!text) return;
                 const qty = taskQty.trim();
                 const unit = taskUnit;
+                const targetDate = fm.get('target_date') ? new Date(fm.get('target_date') as string).toISOString() : null;
                 await insforge.database.from('todos').insert([{
                   text,
                   is_completed: false,
@@ -2550,6 +2595,7 @@ export default function AppOverview() {
                   actual_price: 0,
                   actual_qty: '',
                   purchased_at: '',
+                  target_date: targetDate,
                 }]);
                 await fetchAll();
                 setAddTaskModal(false);
@@ -2573,9 +2619,15 @@ export default function AppOverview() {
                           if (v.length >= 1) {
                             const q = v.toLowerCase();
                             const matches = GROCERY_DB.filter(s =>
-                              s.name.includes(v) ||
-                              s.banglish.some(k => k.startsWith(q) || k.includes(q))
-                            );
+                              s.name.toLowerCase().includes(q) ||
+                              s.banglish.some(k => k.toLowerCase().includes(q))
+                            ).sort((a, b) => {
+                              const aStart = a.name.startsWith(v) || a.banglish.some(k => k.startsWith(q));
+                              const bStart = b.name.startsWith(v) || b.banglish.some(k => k.startsWith(q));
+                              if (aStart && !bStart) return -1;
+                              if (!aStart && bStart) return 1;
+                              return a.name.length - b.name.length;
+                            });
                             setSmartSuggestions(matches.slice(0, 6));
                           } else {
                             setSmartSuggestions([]);
@@ -2588,7 +2640,7 @@ export default function AppOverview() {
                         autoComplete="off"
                       />
                       {/* Live Suggestion Dropdown */}
-                      {smartSuggestions.length > 0 && (
+                      {(smartSuggestions.length > 0 || taskNameInput.length > 0) && (
                         <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-900 border border-[#B45309]/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
                           {smartSuggestions.map((s, i) => (
                             <button
@@ -2610,6 +2662,23 @@ export default function AppOverview() {
                               </div>
                             </button>
                           ))}
+                          
+                          {/* Manual Selection Item — ALWAYS VISIBLE if input exists */}
+                          {taskNameInput.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSmartSuggestions([]);
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-3 bg-[#B45309]/5 hover:bg-[#B45309]/10 text-left transition-colors"
+                            >
+                              <span className="text-2xl w-8 text-center flex-shrink-0 text-[#B45309]">📝</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-black text-sm text-[#B45309]">ম্যানুয়ালি যোগ করুন: "{taskNameInput}"</p>
+                                <p className="text-[10px] text-[#B45309]/60 font-bold">অন্যান্য · আপনার নিজস্ব বিবরণ</p>
+                              </div>
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -2706,9 +2775,15 @@ export default function AppOverview() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আনুমানিক দাম (৳)</label>
-                  <input type="number" name="estimated_price" className={inputCls + " w-full mt-2"} placeholder="০" min="0" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আনুমানিক দাম (৳)</label>
+                    <input type="number" name="estimated_price" className={inputCls + " w-full mt-2"} placeholder="০" min="0" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">তারিখ ও সময়</label>
+                    <input type="datetime-local" name="target_date" className={inputCls + " w-full mt-2"} />
+                  </div>
                 </div>
 
                 <button type="submit" className="w-full bg-[#B45309] text-white font-black py-4 rounded-2xl mt-1 flex items-center justify-center gap-2 shadow-xl shadow-[#B45309]/30 hover:bg-[#92400E] transition-all">
@@ -3156,7 +3231,7 @@ export default function AppOverview() {
               }`}
             >
               <item.icon className={`w-6 h-6 transition-transform ${activeTab === item.id ? 'scale-110' : ''}`} />
-              <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
+              <span className="text-[11px] font-black uppercase tracking-widest">{item.label}</span>
               {activeTab === item.id && <span className="w-1 h-1 rounded-full bg-[#B45309]" />}
             </button>
           ))}

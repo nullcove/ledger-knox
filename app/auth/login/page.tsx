@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'motion/react';
+import { useRouter } from 'next/navigation';
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, ShieldCheck, Sparkles, TrendingUp, PiggyBank, BarChart3, Zap, Star } from 'lucide-react';
 import CustomCursor from '@/components/CustomCursor';
 import { insforge } from '@/lib/insforge';
@@ -64,15 +65,28 @@ const FEATURES = [
 ];
 
 export default function LoginPage() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [focused, setFocused] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+
+  // ── Auto-redirect if already logged in
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data } = await insforge.auth.getCurrentUser();
+      if (data?.user) {
+        router.push('/dashboard');
+      }
+    };
+    checkUser();
+  }, [router]);
 
   // Magnetic/parallax mouse tracking for left panel
   const bgX = useTransform(mouseX, [0, 1], [-20, 20]);
@@ -105,7 +119,7 @@ export default function LoginPage() {
         setError('ভুল ইমেইল বা পাসওয়ার্ড। আবার চেষ্টা করুন।');
       }
     } else {
-      window.location.href = '/dashboard';
+      router.push('/dashboard');
     }
     setLoading(false);
   };
@@ -380,6 +394,37 @@ export default function LoginPage() {
                   {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </motion.button>
               </div>
+            </motion.div>
+
+            {/* Remember Me Checkbox */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.45 }}
+              className="flex items-center gap-3 pt-1 ml-1"
+            >
+              <label className="relative flex items-center cursor-pointer group">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <div className="w-5 h-5 bg-white border-2 border-[#B45309]/20 rounded-md peer-checked:bg-[#B45309] peer-checked:border-[#B45309] transition-all flex items-center justify-center shrink-0">
+                  <motion.svg
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={rememberMe ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+                    className="w-3 h-3 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </motion.svg>
+                </div>
+                <span className="ml-3 text-xs font-black text-[#18181B]/60 uppercase tracking-wider group-hover:text-[#B45309] transition-colors">মনে রাখুন</span>
+              </label>
             </motion.div>
 
             {/* Effect 12: Animated submit button with shimmer */}

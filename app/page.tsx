@@ -18,7 +18,10 @@ import { insforge } from '@/lib/insforge';
 
 const NAV_LINKS = [
   { name: 'ফিচার', href: '/features', icon: Sparkles },
-  { name: 'ডোনেশন', href: '#donation', icon: Heart },
+  { name: 'প্রাইসিং', href: '/pricing', icon: CreditCard },
+  { name: 'আমাদের সম্পর্কে', href: '/about', icon: Users },
+  { name: 'নিরাপত্তা', href: '/security', icon: Lock },
+  { name: 'সচরাচর প্রশ্ন', href: '/faq', icon: Info },
   { name: 'সহযোগিতা', href: '/help', icon: HelpCircle },
   { name: 'যোগাযোগ', href: '/contact', icon: MessageSquare },
 ];
@@ -728,10 +731,15 @@ export default function LandingPage() {
 
           <div className="flex flex-wrap justify-center gap-12 font-black text-[10px] uppercase tracking-[0.3em] overflow-hidden">
              {[
-               { name: 'Terms', href: '/terms' },
-               { name: 'Privacy', href: '/privacy' },
-               { name: 'Github', href: 'https://github.com' },
-               { name: 'LinkedIn', href: '#' }
+               { name: 'ফিচার', href: '/features' },
+               { name: 'প্রাইসিং', href: '/pricing' },
+               { name: 'সম্পর্কে', href: '/about' },
+               { name: 'নিরাপত্তা', href: '/security' },
+               { name: 'FAQ', href: '/faq' },
+               { name: 'হেল্প', href: '/help' },
+               { name: 'যোগাযোগ', href: '/contact' },
+               { name: 'শর্তাবলী', href: '/terms' },
+               { name: 'প্রাইভেসি', href: '/privacy' }
              ].map(f => (
                <Link key={f.name} href={f.href} className="hover:text-white hover:tracking-[0.5em] transition-all duration-500">{f.name}</Link>
              ))}

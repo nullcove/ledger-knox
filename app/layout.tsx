@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Hind_Siliguri } from 'next/font/google';
+import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 
 const hindSiliguri = Hind_Siliguri({ 
@@ -126,6 +127,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${hindSiliguri.className} antialiased`}
         suppressHydrationWarning
       >
+        {/* Global Loading Bar */}
+        <NextTopLoader
+          color="#92400E"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #92400E,0 0 5px #92400E"
+        />
+
         {/* Global JSON-LD — Server-Side for all pages */}
         <script
           type="application/ld+json"
