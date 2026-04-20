@@ -9,7 +9,7 @@ import {
   LayoutDashboard, ListOrdered, BarChart3, PiggyBank, Receipt, X, CreditCard,
   Target, Menu, Sun, Moon, Briefcase, RefreshCw, LogOut, Calendar, UserPlus,
   ArrowUpRight, ArrowDownLeft, ArrowRight, Search, Filter, Loader2,
-  ShieldCheck, AlertTriangle, CheckCircle2, Settings, Camera, Lock, Bell,
+  ShieldCheck, AlertTriangle, CheckCircle2, Settings, Camera, Lock, Bell, History,
   TrendingUp, ChevronLeft, ChevronRight as ChevronRightIcon, Star, Mail
 } from 'lucide-react';
 import {
@@ -30,9 +30,9 @@ interface Transaction {
   id: string; type: TransactionType; amount: number;
   category: string; note: string; date: string; walletId?: WalletType;
 }
-interface Todo { id: string; text: string; isCompleted: boolean; }
+interface Todo { id: string; text: string; isCompleted: boolean; category: string; quantity: string; priority: 'low'|'normal'|'high'; estimated_price: number; }
 interface WalletObj { id: WalletType; name: string; balance: number; icon: any; color: string; }
-interface Goal { id: string; name: string; target: number; saved: number; }
+interface Goal { id: string; name: string; target: number; saved: number; payments?: { id: string; amount: number; date: string; note: string; }[]; }
 interface DebtPayment { id: string; amount: number; date: string; note: string; }
 interface Debt { id: string; person: string; amount: number; type: 'borrowed' | 'lent'; note?: string; created_at: string; status?: string; paid_amount?: number; payments?: DebtPayment[]; }
 interface Subscription { id: string; name: string; amount: number; nextDate: string; }
@@ -82,6 +82,21 @@ const SIDEBAR_ITEMS = [
 ];
 
 const SHOP_CATEGORIES = ['মুদিখানা', 'রেস্তোরাঁ', 'ওষুধ', 'কাপড়', 'মোবাইল/ইলেকট্রনিক্স', 'অন্যান্য'];
+
+const BAZAR_CATEGORIES = [
+  { id: 'শাকসবজি', emoji: '🥬', color: 'emerald' },
+  { id: 'ফলমূল', emoji: '🍎', color: 'rose' },
+  { id: 'মাছ/মাংস', emoji: '🐟', color: 'blue' },
+  { id: 'দুগ্ধজাত', emoji: '🥛', color: 'sky' },
+  { id: 'শুকনো পণ্য', emoji: '🌾', color: 'amber' },
+  { id: 'মশলা', emoji: '🌶️', color: 'orange' },
+  { id: 'অন্যান্য', emoji: '📦', color: 'slate' },
+];
+const PRIORITIES = [
+  { id: 'high', label: 'জরুরি', color: 'text-rose-600 bg-rose-100 dark:bg-rose-900/30', dot: '🔴' },
+  { id: 'normal', label: 'স্বাভাবিক', color: 'text-amber-600 bg-amber-100 dark:bg-amber-900/30', dot: '🟡' },
+  { id: 'low', label: 'পরে হলেও চলবে', color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30', dot: '🟢' },
+];
 
 const PIE_COLORS = ['#B45309', '#D97706', '#18181B', '#92400E', '#78716C'];
 
@@ -170,12 +185,20 @@ export default function AppOverview() {
   const [payShopModal, setPayShopModal] = useState<ShopCredit | null>(null);
   const [shopHistoryModal, setShopHistoryModal] = useState<ShopCredit | null>(null);
   const [editShopModal, setEditShopModal] = useState<ShopCredit | null>(null);
+  const [goalContributions, setGoalContributions] = useState<any[]>([]);
+  const [goalHistoryModal, setGoalHistoryModal] = useState<Goal | null>(null);
+  const [addGoalContributionModal, setAddGoalContributionModal] = useState<Goal | null>(null);
 
   // Add modal states for inline forms
   const [addBudgetModal, setAddBudgetModal] = useState(false);
   const [addGoalModal, setAddGoalModal] = useState(false);
   const [addDebtModal, setAddDebtModal] = useState(false);
   const [addRecurringModal, setAddRecurringModal] = useState(false);
+
+  // Bazar Talika extra state
+  const [addTaskModal, setAddTaskModal] = useState(false);
+  const [bazarCatFilter, setBazarCatFilter] = useState('all');
+  const [editTaskModal, setEditTaskModal] = useState<Todo | null>(null);
 
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -228,8 +251,9 @@ export default function AppOverview() {
         insforge.database.from('profiles').select('*').eq('id', userDat.user.id),
         insforge.database.from('shop_credits').select('*').order('created_at', { ascending: false }),
         insforge.database.from('shop_credit_payments').select('*').order('date', { ascending: false }),
+        insforge.database.from('goal_contributions').select('*').order('date', { ascending: false }),
       ]);
-      const [txRes, dpsRes, tdRes, goRes, dbRes, subRes, budRes, profRes, scRes, scpRes] = results;
+      const [txRes, dpsRes, tdRes, goRes, dbRes, subRes, budRes, profRes, scRes, scpRes, gctRes] = results;
 
       if (txRes.data) {
         const txs: Transaction[] = txRes.data.map((d: any) => ({
@@ -246,8 +270,15 @@ export default function AppOverview() {
         });
         setWallets(prev => prev.map(w => ({ ...w, balance: wMap[w.id] ?? 0 })));
       }
-      if (tdRes.data) setTodos(tdRes.data.map((d: any) => ({ id: d.id, text: d.text, isCompleted: d.is_completed })));
-      if (goRes.data) setGoals(goRes.data.map((d: any) => ({ id: d.id, name: d.name, target: Number(d.target), saved: Number(d.saved) })));
+      if (tdRes.data) setTodos(tdRes.data.map((d: any) => ({ id: d.id, text: d.text, isCompleted: d.is_completed, category: d.category || 'অন্যান্য', quantity: d.quantity || '', priority: d.priority || 'normal', estimated_price: Number(d.estimated_price) || 0 })));
+      if (goRes.data) {
+        const goContributions = gctRes.data || [];
+        setGoals(goRes.data.map((d: any) => {
+          const payments = goContributions.filter((p: any) => p.goal_id === d.id).map((p: any) => ({ id: p.id, amount: Number(p.amount), date: p.date, note: p.note }));
+          return { id: d.id, name: d.name, target: Number(d.target), saved: Number(d.saved), payments };
+        }));
+        setGoalContributions(goContributions);
+      }
       if (dbRes.data) {
         const dps = dpsRes.data || [];
         setDebts(dbRes.data.map((d: any) => {
@@ -386,11 +417,25 @@ export default function AppOverview() {
     if (!payShopModal) return;
     const fm = new FormData(e.currentTarget);
     const amt = Number(fm.get('amount'));
+    const wallet_id = fm.get('wallet_id') as string;
     const note = fm.get('note') as string;
+    
     const { error } = await insforge.database.from('shop_credit_payments').insert({
-      credit_id: payShopModal.id, amount: amt, note,
+      credit_id: payShopModal.id, amount: amt, note, wallet_id
     });
+    
     if (!error) {
+      if (wallet_id) {
+        await insforge.database.from('transactions').insert({
+          type: 'expense',
+          amount: amt,
+          category: 'Shopping',
+          note: `Shop Credit Pay (${payShopModal.shop_name}): ${note}`,
+          date: new Date().toISOString(),
+          wallet_id,
+          user_id: currentUser!.id
+        });
+      }
       const newPaid = payShopModal.paid_amount + amt;
       const newStatus = newPaid >= payShopModal.total_amount ? 'settled' : 'pending';
       await insforge.database.from('shop_credits').update({ status: newStatus }).eq('id', payShopModal.id);
@@ -437,6 +482,31 @@ export default function AppOverview() {
     setEditType(tx.type);
     setEditDate(format(parseISO(tx.date), 'yyyy-MM-dd'));
     setEditWallet((tx.walletId || 'cash') as WalletType);
+  };
+
+  const handleAddGoalContribution = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!addGoalContributionModal) return;
+    const fm = new FormData(e.currentTarget);
+    const amt = Number(fm.get('amount'));
+    const wallet_id = fm.get('wallet_id') as string;
+    const note = fm.get('note') as string;
+
+    const { error } = await insforge.database.from('goal_contributions').insert({
+      goal_id: addGoalContributionModal.id, amount: amt, note, user_id: currentUser!.id
+    });
+
+    if (!error) {
+      if (wallet_id) {
+        await insforge.database.from('transactions').insert({
+          type: 'expense', amount: amt, category: 'Savings',
+          note: `Goal Save (${addGoalContributionModal.name}): ${note}`,
+          date: new Date().toISOString(), wallet_id, user_id: currentUser!.id
+        });
+      }
+      await insforge.database.from('goals').update({ saved: addGoalContributionModal.saved + amt }).eq('id', addGoalContributionModal.id);
+    setAddGoalContributionModal(null); await fetchAll();
+    }
   };
 
   const handleUpdateTransaction = async (e: React.FormEvent) => {
@@ -1066,41 +1136,16 @@ export default function AppOverview() {
           {/* ══════════════ BUDGET ══════════════ */}
           {activeTab === 'budget' && (
             <div className="space-y-8 animate-mati">
-              <div className="p-8 bg-[#18181B] dark:bg-zinc-900 text-white rounded-[40px] space-y-6 shadow-2xl">
-                <h3 className="text-xl font-black flex items-center gap-3"><Target className="w-5 h-5 text-[#B45309]" /> নতুন বাজেট সেট করুন</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
-                    <select value={budgetCat} onChange={e => setBudgetCat(e.target.value)} className="w-full bg-white/5 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 px-5 py-4 rounded-2xl font-bold outline-none text-white">
-                      {CATEGORIES.map(c => <option key={c.id} value={c.id} className="text-black">{c.id}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">মাসিক লিমিট ({currency})</label>
-                    <input type="number" value={budgetLimit} onChange={e => setBudgetLimit(e.target.value)} className="w-full bg-white/5 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 px-5 py-4 rounded-2xl font-bold outline-none text-white" placeholder="যেমন: 5000" />
-                  </div>
-                  <button onClick={async () => {
-                    if (!budgetLimit) return;
-                    const existing = budgets.find(b => b.category === budgetCat);
-                    if (existing) await insforge.database.from('budgets').update({ monthly_limit: Number(budgetLimit) }).eq('id', existing.id);
-                    else await insforge.database.from('budgets').insert({ category: budgetCat, monthly_limit: Number(budgetLimit), user_id: currentUser!.id });
-                    setBudgetLimit(''); await fetchAll();
-                  }} className="bg-[#B45309] text-white py-4 px-6 rounded-2xl font-black hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-xl dark:shadow-none shadow-[#B45309]/30">
-                    <Plus className="w-5 h-5" /> সেট করুন
-                  </button>
-                </div>
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="p-6 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[32px] shadow-sm dark:shadow-none text-center">
-                  <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">এই মাসে খরচ</p>
+                <div className="p-6 bg-[#18181B] dark:bg-zinc-900 rounded-[32px] text-center text-white shadow-2xl">
+                  <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">এই মাসে খরচ</p>
                   <p className="text-3xl font-black">{currency}{thisMonthExpenses.toLocaleString()}</p>
                 </div>
-                <div className="p-6 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[32px] shadow-sm dark:shadow-none text-center">
+                <div className="p-6 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[32px] text-center shadow-sm dark:shadow-none">
                   <p className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1">মোট বাজেট</p>
                   <p className="text-3xl font-black">{currency}{budgets.reduce((s, b) => s + b.monthly_limit, 0).toLocaleString()}</p>
                 </div>
-                <div className="p-6 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[32px] shadow-sm dark:shadow-none text-center">
+                <div className="p-6 bg-white dark:bg-zinc-950 border border-emerald-200 dark:border-emerald-800/30 rounded-[32px] text-center shadow-sm dark:shadow-none">
                   <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">অবশিষ্ট</p>
                   <p className={`text-3xl font-black ${budgets.reduce((s, b) => s + b.monthly_limit, 0) - thisMonthExpenses >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {currency}{(budgets.reduce((s, b) => s + b.monthly_limit, 0) - thisMonthExpenses).toLocaleString()}
@@ -1109,9 +1154,12 @@ export default function AppOverview() {
               </div>
 
               {budgetProgress.length === 0 ? (
-                <div className="text-center py-20 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px] space-y-4">
+                <div className="text-center py-24 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px] space-y-4">
                   <Target className="w-16 h-16 text-slate-200 dark:text-zinc-700 mx-auto" />
                   <p className="text-slate-400 dark:text-zinc-500 font-black uppercase text-xs tracking-widest">কোনো বাজেট সেট করা নেই</p>
+                  <button onClick={() => setAddBudgetModal(true)} className="mt-4 bg-[#B45309] text-white px-8 py-3 rounded-2xl font-black text-sm inline-flex items-center gap-2 shadow-lg shadow-[#B45309]/30 hover:bg-[#92400E] transition-all">
+                    <Plus className="w-4 h-4" /> প্রথম বাজেট যোগ করুন
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1146,37 +1194,16 @@ export default function AppOverview() {
                   ))}
                 </div>
               )}
+              {/* FAB */}
+              <button onClick={() => setAddBudgetModal(true)} className="fixed bottom-24 right-6 lg:bottom-10 lg:right-10 z-50 w-14 h-14 bg-[#B45309] text-white rounded-full shadow-2xl shadow-[#B45309]/40 flex items-center justify-center hover:bg-[#92400E] hover:scale-110 transition-all">
+                <Plus className="w-7 h-7" />
+              </button>
             </div>
           )}
 
           {/* ══════════════ GOALS ══════════════ */}
           {activeTab === 'goals' && (
             <div className="space-y-8 animate-mati">
-              <div className="p-8 bg-[#18181B] dark:bg-zinc-900 text-white rounded-[40px] shadow-2xl space-y-5">
-                <h3 className="text-xl font-black flex items-center gap-3"><PiggyBank className="w-5 h-5 text-[#B45309]" /> নতুন সঞ্চয় লক্ষ্য</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-5 items-end">
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">লক্ষ্যের নাম</label>
-                    <input value={goalAddName} onChange={e => setGoalAddName(e.target.value)} className="w-full bg-white/5 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 px-5 py-4 rounded-2xl font-bold outline-none text-white" placeholder="যেমন: ল্যাপটপ কেনা..." />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">টার্গেট ({currency})</label>
-                    <input type="number" value={goalAddTarget} onChange={e => setGoalAddTarget(e.target.value)} className="w-full bg-white/5 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 px-5 py-4 rounded-2xl font-bold outline-none text-white" placeholder="৳ 0" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">এখন জমা ({currency})</label>
-                    <input type="number" value={goalAddSaved} onChange={e => setGoalAddSaved(e.target.value)} className="w-full bg-white/5 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 px-5 py-4 rounded-2xl font-bold outline-none text-white" placeholder="৳ 0" />
-                  </div>
-                </div>
-                <button onClick={async () => {
-                  if (!goalAddName || !goalAddTarget) return;
-                  await insforge.database.from('goals').insert({ name: goalAddName, target: Number(goalAddTarget), saved: Number(goalAddSaved || 0), user_id: currentUser!.id });
-                  setGoalAddName(''); setGoalAddTarget(''); setGoalAddSaved(''); await fetchAll();
-                }} className="bg-[#B45309] text-white py-4 px-8 rounded-2xl font-black hover:scale-105 transition-all flex items-center gap-2 shadow-xl dark:shadow-none shadow-[#B45309]/30">
-                  <Plus className="w-5 h-5" /> লক্ষ্য যুক্ত করুন
-                </button>
-              </div>
-
               {goals.length > 0 && (
                 <div className="grid grid-cols-3 gap-5">
                   {[{ label: 'মোট লক্ষ্য', val: `${goals.length}টি`, color: 'text-[#18181B] dark:text-white/95' }, { label: 'মোট জমা', val: `${currency}${goals.reduce((s, g) => s + g.saved, 0).toLocaleString()}`, color: 'text-emerald-600' }, { label: 'মোট টার্গেট', val: `${currency}${goals.reduce((s, g) => s + g.target, 0).toLocaleString()}`, color: 'text-[#B45309]' }].map((item, i) => (
@@ -1187,11 +1214,11 @@ export default function AppOverview() {
                   ))}
                 </div>
               )}
-
               {goals.length === 0 ? (
-                <div className="text-center py-20 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px]">
+                <div className="text-center py-24 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px] space-y-4">
                   <PiggyBank className="w-16 h-16 text-slate-200 dark:text-zinc-700 mx-auto mb-4" />
                   <p className="text-slate-400 dark:text-zinc-500 font-black uppercase text-xs tracking-widest">কোনো সঞ্চয় লক্ষ্য নেই</p>
+                  <button onClick={() => setAddGoalModal(true)} className="mt-4 bg-[#B45309] text-white px-8 py-3 rounded-2xl font-black text-sm inline-flex items-center gap-2 shadow-lg shadow-[#B45309]/30 hover:bg-[#92400E] transition-all"><Plus className="w-4 h-4" /> প্রথম লক্ষ্য যোগ করুন</button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1210,11 +1237,10 @@ export default function AppOverview() {
                             </div>
                           </div>
                           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onClick={async () => { const add = prompt('কত টাকা জমা করবেন?'); if (add && !isNaN(Number(add))) { await insforge.database.from('goals').update({ saved: g.saved + Number(add) }).eq('id', g.id); await fetchAll(); } }} className="p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl text-emerald-600 hover:bg-emerald-100"><Plus className="w-4 h-4" /></button>
-                            <div className="flex gap-2">
-                               <button onClick={() => setEditGoalModal(g)} className="p-2 bg-[#F9F4F0] dark:bg-black rounded-xl text-slate-400 dark:text-zinc-500 hover:text-emerald-500"><Edit2 className="w-4 h-4" /></button>
-                               <button onClick={async () => { if (window.confirm('ডিলিট করবেন?')) { await insforge.database.from('goals').delete().eq('id', g.id); await fetchAll(); } }} className="p-2 bg-[#F9F4F0] dark:bg-black rounded-xl text-slate-400 dark:text-zinc-500 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
-                            </div>
+                            <button onClick={() => setAddGoalContributionModal(g)} className="p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl text-emerald-600 hover:bg-emerald-100 shadow-sm"><Plus className="w-4 h-4" /></button>
+                            <button onClick={() => setGoalHistoryModal(g)} className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-xl text-blue-600 hover:bg-blue-100 shadow-sm"><History className="w-4 h-4" /></button>
+                            <button onClick={() => setEditGoalModal(g)} className="p-2 bg-[#F9F4F0] dark:bg-black rounded-xl text-slate-400 dark:text-zinc-500 hover:text-emerald-500"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={async () => { if (window.confirm('ডিলিট করবেন?')) { await insforge.database.from('goals').delete().eq('id', g.id); await fetchAll(); } }} className="p-2 bg-[#F9F4F0] dark:bg-black rounded-xl text-slate-400 dark:text-zinc-500 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </div>
                         <div className="space-y-3">
@@ -1235,48 +1261,21 @@ export default function AppOverview() {
                   })}
                 </div>
               )}
+              <button onClick={() => setAddGoalModal(true)} className="fixed bottom-24 right-6 lg:bottom-10 lg:right-10 z-50 w-14 h-14 bg-[#B45309] text-white rounded-full shadow-2xl shadow-[#B45309]/40 flex items-center justify-center hover:bg-[#92400E] hover:scale-110 transition-all"><Plus className="w-7 h-7" /></button>
             </div>
           )}
 
           {/* ══════════════ DEBTS ══════════════ */}
           {activeTab === 'debts' && (
             <div className="space-y-8 animate-mati">
-              <form onSubmit={async (e) => {
-                e.preventDefault(); const fm = new FormData(e.currentTarget);
-                const { error } = await insforge.database.from('debts').insert({ person: fm.get('person') as string, amount: Number(fm.get('amount')), type: fm.get('type') as string, note: fm.get('note') as string, user_id: currentUser!.id });
-                if (!error) { fetchAll(); (e.target as HTMLFormElement).reset(); }
-              }} className="p-8 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[40px] shadow-sm dark:shadow-none space-y-6">
-                <h3 className="text-xl font-black flex items-center gap-3"><Briefcase className="w-5 h-5 text-[#B45309]" /> নতুন ধার হিসাব</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-end">
-                  <div className="space-y-2 lg:col-span-2 relative">
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ব্যক্তির নাম</label>
-                    <input name="person" required className={inputCls + " w-full"} placeholder="নাম লিখুন..." value={debtNameSearch} onChange={(e) => { setDebtNameSearch(e.target.value); setShowDebtSuggestions(true); }} onFocus={() => setShowDebtSuggestions(true)} onBlur={() => setTimeout(() => setShowDebtSuggestions(false), 200)} />
-                    {showDebtSuggestions && debtNameSearch && Array.from(new Set(debts.map(d => d.person))).filter(p => p.toLowerCase().includes(debtNameSearch.toLowerCase()) && p !== debtNameSearch).length > 0 && (
-                      <div className="absolute top-full mt-2 w-full bg-white dark:bg-zinc-900 border border-[#B45309]/10 dark:border-white/10 rounded-2xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                        {Array.from(new Set(debts.map(d => d.person))).filter(p => p.toLowerCase().includes(debtNameSearch.toLowerCase()) && p !== debtNameSearch).map((p, i) => (
-                          <button type="button" key={i} onClick={() => { setDebtNameSearch(p); setShowDebtSuggestions(false); }} className="w-full text-left px-4 py-3 hover:bg-[#F9F4F0] dark:hover:bg-black font-black text-sm">{p}</button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-2"><label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ</label><input name="amount" type="number" required className={inputCls} placeholder="৳ 0" /></div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ধরণ</label>
-                    <div className="grid grid-cols-2 gap-2 h-[56px]">
-                      <label className="relative flex items-center justify-center bg-[#F9F4F0] dark:bg-black rounded-2xl cursor-pointer font-black text-[10px] uppercase tracking-widest"><input type="radio" name="type" value="lent" defaultChecked className="hidden peer" /><span className="peer-checked:text-emerald-600">পাওনা</span><div className="absolute inset-0 border-2 border-transparent peer-checked:border-emerald-500 rounded-2xl" /></label>
-                      <label className="relative flex items-center justify-center bg-[#F9F4F0] dark:bg-black rounded-2xl cursor-pointer font-black text-[10px] uppercase tracking-widest"><input type="radio" name="type" value="borrowed" className="hidden peer" /><span className="peer-checked:text-rose-600">দেনা</span><div className="absolute inset-0 border-2 border-transparent peer-checked:border-rose-500 rounded-2xl" /></label>
-                    </div>
-                  </div>
-                  <div className="space-y-2 lg:col-span-3"><label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">নোট</label><input name="note" className={inputCls} placeholder="কারণ বা বিবরণ..." /></div>
-                  <button type="submit" className="bg-[#18181B] dark:bg-zinc-900 text-white font-black py-4 rounded-2xl hover:bg-black transition-all flex items-center justify-center gap-2 shadow-xl dark:shadow-none"><UserPlus className="w-5 h-5 text-[#B45309]" /> যোগ করুন</button>
+              <div className="flex gap-3 items-center justify-between flex-wrap">
+                <div className="flex gap-2 bg-[#F9F4F0] dark:bg-zinc-900/50 p-1.5 rounded-2xl">
+                  {(['all', 'pending', 'settled'] as const).map(f => (
+                    <button key={f} type="button" onClick={() => setDebtFilter(f)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${debtFilter === f ? 'bg-white dark:bg-zinc-950 text-[#18181B] dark:text-white shadow-sm' : 'text-slate-400 dark:text-zinc-500'}`}>{f === 'all' ? 'সব' : f === 'pending' ? 'বকেয়া' : 'পরিশোধিত'}</button>
+                  ))}
                 </div>
-              </form>
-              <div className="flex gap-2 bg-[#F9F4F0] dark:bg-zinc-900/50 p-2 rounded-2xl w-max">
-                {['all', 'pending', 'settled'].map(f => (
-                  <button key={f} type="button" onClick={() => setDebtFilter(f as any)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${debtFilter === f ? 'bg-white dark:bg-zinc-950 text-[#18181B] dark:text-white shadow-sm' : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600'}`}>{f === 'all' ? 'সব' : f === 'pending' ? 'বকেয়া' : 'পরিশোধিত'}</button>
-                ))}
+                <button onClick={() => setAddDebtModal(true)} className="bg-[#B45309] text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 hover:bg-[#92400E] transition-all shadow-lg shadow-[#B45309]/30 text-sm"><Plus className="w-4 h-4" /> নতুন ধার</button>
               </div>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {debts.filter(d => debtFilter === 'all' ? true : debtFilter === 'pending' ? d.status !== 'settled' : d.status === 'settled').map(d => {
                   const paid = d.paid_amount || 0;
@@ -1287,11 +1286,11 @@ export default function AppOverview() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex gap-2 items-center">
                         <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${d.type === 'lent' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600'}`}>{d.type === 'lent' ? <ArrowUpRight className="w-5 h-5"/> : <ArrowDownLeft className="w-5 h-5"/>}</div>
-                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${d.status === 'settled' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30' : paid > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30'}`}>{d.status === 'settled' ? 'Settled' : paid > 0 ? 'Partially Paid' : 'Pending'}</span>
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${d.status === 'settled' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30' : paid > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30'}`}>{d.status === 'settled' ? 'Settled' : paid > 0 ? 'Partial' : 'Pending'}</span>
                       </div>
                       <div className="flex opacity-0 group-hover:opacity-100 transition-all gap-1">
-                        <button onClick={() => setEditModalDebt(d)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500 transition-all"><Edit2 className="w-4 h-4" /></button>
-                        <button onClick={async () => { if (window.confirm('ডিলিট করতে চান?')) { await insforge.database.from('debts').delete().eq('id', d.id); fetchAll(); } }} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-rose-500 transition-all"><Trash2 className="w-4 h-4" /></button>
+                        <button onClick={() => setEditModalDebt(d)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500"><Edit2 className="w-4 h-4" /></button>
+                        <button onClick={async () => { if (window.confirm('ডিলিট করতে চান?')) { await insforge.database.from('debts').delete().eq('id', d.id); fetchAll(); } }} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </div>
                     <p className="text-2xl font-black">{d.person}</p>
@@ -1299,31 +1298,16 @@ export default function AppOverview() {
                     {d.note && <p className="text-sm text-slate-400 dark:text-zinc-500 italic mt-2">"{d.note}"</p>}
                     <div className="mt-4 pt-4 border-t border-[#F9F4F0] dark:border-white/5 space-y-4">
                       <div className="flex justify-between items-end">
-                         <div>
-                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">মোট</p>
-                           <p className={`text-xl font-black ${d.type === 'lent' ? 'text-emerald-600' : 'text-rose-600'}`}>{currency}{d.amount.toLocaleString()}</p>
-                         </div>
-                         <div className="text-right">
-                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">বাকি আছে</p>
-                           <p className="text-xl font-black text-[#18181B] dark:text-white">{currency}{remain.toLocaleString()}</p>
-                         </div>
+                         <div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">মোট</p><p className={`text-xl font-black ${d.type === 'lent' ? 'text-emerald-600' : 'text-rose-600'}`}>{currency}{d.amount.toLocaleString()}</p></div>
+                         <div className="text-right"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">বাকি আছে</p><p className="text-xl font-black">{currency}{remain.toLocaleString()}</p></div>
                       </div>
-                      <div className="space-y-1">
-                        <div className="w-full bg-[#F9F4F0] dark:bg-zinc-900 rounded-full h-2 overflow-hidden">
-                          <div className={`${d.status==='settled'?'bg-emerald-500':'bg-[#B45309]'} h-full rounded-full transition-all`} style={{width: `${pct}%`}}></div>
-                        </div>
-                        <p className="text-[9px] font-black text-slate-400 text-right">{pct}% পরিশোধিত</p>
+                      <div className="w-full bg-[#F9F4F0] dark:bg-zinc-900 rounded-full h-2 overflow-hidden">
+                        <div className={`${d.status==='settled'?'bg-emerald-500':'bg-[#B45309]'} h-full rounded-full transition-all`} style={{width:`${pct}%`}}></div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 mt-4">
-                         <button onClick={() => setRepayModalDebt(d)} disabled={d.status === 'settled'} className="py-2.5 rounded-xl border border-[#B45309] text-[#B45309] font-black text-[10px] uppercase tracking-widest hover:bg-[#B45309] hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#B45309]">টাকা দিন/নিন</button>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                         <button onClick={() => setRepayModalDebt(d)} disabled={d.status === 'settled'} className="py-2.5 rounded-xl border border-[#B45309] text-[#B45309] font-black text-[10px] uppercase tracking-widest hover:bg-[#B45309] hover:text-white transition-all disabled:opacity-30">টাকা দিন/নিন</button>
                          <button onClick={() => setDebtHistoryModal(d)} className="py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-zinc-900 transition-all">হিস্ট্রি</button>
                       </div>
-                      {d.status !== 'settled' && (
-                        <a href={`https://wa.me/?text=${encodeURIComponent(`Hi ${d.person}, just a reminder about the pending amount of ${currency}${remain}.`)}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:bg-emerald-100 dark:hover:bg-emerald-900/40 w-full transition-all mt-2">
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606..."></path></svg>
-                          WhatsApp Reminder
-                        </a>
-                      )}
                     </div>
                   </div>
                 )})}
@@ -1351,18 +1335,6 @@ export default function AppOverview() {
                   </div>
                 </div>
               )}
-
-              <form onSubmit={async (e) => {
-                e.preventDefault(); const fm = new FormData(e.currentTarget);
-                const { error } = await insforge.database.from('subscriptions').insert({ name: fm.get('name') as string, amount: Number(fm.get('amount')), next_date: new Date(fm.get('date') as string).toISOString(), user_id: currentUser!.id });
-                if (!error) { fetchAll(); (e.target as HTMLFormElement).reset(); }
-              }} className="p-8 bg-[#18181B] dark:bg-zinc-900 rounded-[40px] grid grid-cols-1 md:grid-cols-4 gap-5 items-end text-white shadow-2xl">
-                <div className="space-y-2 md:col-span-2"><label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">বিলের নাম</label><input name="name" required className="w-full bg-white/5 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 p-4 rounded-2xl font-bold outline-none" placeholder="Netflix, WiFi..." /></div>
-                <div className="space-y-2"><label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ</label><input name="amount" type="number" required className="w-full bg-white/5 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 p-4 rounded-2xl font-bold outline-none" placeholder="৳ 0" /></div>
-                <div className="space-y-2"><label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরবর্তী তারিখ</label><input name="date" type="date" required className="w-full bg-white/5 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 p-4 rounded-2xl font-bold outline-none" /></div>
-                <button type="submit" className="md:col-span-4 bg-[#B45309] text-white font-black py-4 rounded-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-xl dark:shadow-none shadow-[#B45309]/30"><RefreshCw className="w-5 h-5" /> শিডিউল করুন</button>
-              </form>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {subscriptions.map(s => {
                   const daysLeft = differenceInDays(parseISO(s.nextDate), new Date());
@@ -1389,78 +1361,130 @@ export default function AppOverview() {
                   );
                 })}
                 {subscriptions.length === 0 && (
-                  <div className="col-span-3 text-center py-20 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px]">
+                  <div className="col-span-3 text-center py-24 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px]">
                     <RefreshCw className="w-16 h-16 text-slate-200 dark:text-zinc-700 mx-auto mb-4" />
                     <p className="text-slate-400 dark:text-zinc-500 font-black uppercase text-xs tracking-widest">কোনো রিকারিং বিল নেই</p>
+                    <button onClick={() => setAddRecurringModal(true)} className="mt-4 bg-[#B45309] text-white px-8 py-3 rounded-2xl font-black text-sm inline-flex items-center gap-2 shadow-lg shadow-[#B45309]/30 hover:bg-[#92400E] transition-all"><Plus className="w-4 h-4" /> প্রথম বিল যোগ করুন</button>
                   </div>
                 )}
               </div>
+              <button onClick={() => setAddRecurringModal(true)} className="fixed bottom-24 right-6 lg:bottom-10 lg:right-10 z-50 w-14 h-14 bg-[#B45309] text-white rounded-full shadow-2xl shadow-[#B45309]/40 flex items-center justify-center hover:bg-[#92400E] hover:scale-110 transition-all"><Plus className="w-7 h-7" /></button>
             </div>
           )}
 
-          {/* ══════════════ TASKS ══════════════ */}
-          {activeTab === 'tasks' && (
-            <div className="space-y-8 animate-mati">
-              <div className="flex gap-3">
-                <input value={taskInput} onChange={e => setTaskInput(e.target.value)}
-                  onKeyDown={async (e) => { if (e.key === 'Enter' && taskInput.trim()) { await insforge.database.from('todos').insert({ text: taskInput.trim(), is_completed: false, user_id: currentUser!.id }); setTaskInput(''); await fetchAll(); } }}
-                  className={`flex-1 ${inputCls} text-lg`} placeholder="নতুন আইটেম লিখুন... (Enter)" />
-                <button onClick={async () => { if (!taskInput.trim()) return; await insforge.database.from('todos').insert({ text: taskInput.trim(), is_completed: false, user_id: currentUser!.id }); setTaskInput(''); await fetchAll(); }} className="bg-[#B45309] text-white px-6 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-[#92400E] transition-all shadow-xl dark:shadow-none shadow-[#B45309]/30">
-                  <Plus className="w-5 h-5" /> যোগ
-                </button>
-              </div>
-
-              {todos.length > 0 && (
-                <div className="grid grid-cols-3 gap-5">
-                  {[{ label: 'মোট', val: todos.length, color: 'text-[#18181B] dark:text-white/95' }, { label: 'সম্পন্ন', val: todos.filter(t => t.isCompleted).length, color: 'text-emerald-600' }, { label: 'বাকি', val: todos.filter(t => !t.isCompleted).length, color: 'text-amber-600' }].map((item, i) => (
-                    <div key={i} className="p-5 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[28px] shadow-sm dark:shadow-none text-center">
-                      <p className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{item.label}</p>
-                      <p className={`text-3xl font-black ${item.color}`}>{item.val}</p>
-                    </div>
-                  ))}
+          {/* ══════════════ TASKS (বাজার তালিকা) ══════════════ */}
+          {activeTab === 'tasks' && (() => {
+            const filtered = todos.filter(t => !t.isCompleted && (bazarCatFilter === 'all' || t.category === bazarCatFilter));
+            const completedTodos = todos.filter(t => t.isCompleted);
+            const totalEstimated = todos.filter(t => !t.isCompleted).reduce((s, t) => s + t.estimated_price, 0);
+            const progress = todos.length > 0 ? Math.round((completedTodos.length / todos.length) * 100) : 0;
+            return (
+              <div className="space-y-6 animate-mati">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="p-5 bg-[#18181B] dark:bg-zinc-900 rounded-[28px] text-center text-white shadow-xl">
+                    <p className="text-[9px] font-black text-[#B45309] uppercase tracking-widest mb-1">মোট আইটেম</p>
+                    <p className="text-3xl font-black">{todos.length}</p>
+                  </div>
+                  <div className="p-5 bg-white dark:bg-zinc-950 border border-emerald-200 dark:border-emerald-800/30 rounded-[28px] text-center shadow-sm dark:shadow-none">
+                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">কেনা হয়েছে</p>
+                    <p className="text-3xl font-black text-emerald-600">{completedTodos.length}</p>
+                  </div>
+                  <div className="p-5 bg-white dark:bg-zinc-950 border border-amber-200 dark:border-amber-800/30 rounded-[28px] text-center shadow-sm dark:shadow-none">
+                    <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-1">বাকি আছে</p>
+                    <p className="text-3xl font-black text-amber-600">{todos.filter(t => !t.isCompleted).length}</p>
+                  </div>
+                  <div className="p-5 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[28px] text-center shadow-sm dark:shadow-none">
+                    <p className="text-[9px] font-black text-[#B45309] uppercase tracking-widest mb-1">আনুমানিক খরচ</p>
+                    <p className="text-2xl font-black">{currency}{totalEstimated.toLocaleString()}</p>
+                  </div>
                 </div>
-              )}
-
-              <div className="space-y-3">
-                {todos.filter(t => !t.isCompleted).map(t => (
-                  <div key={t.id} className="flex items-center gap-4 p-5 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none group hover:border-[#B45309]/30 transition-all">
-                    <button onClick={async () => { await insforge.database.from('todos').update({ is_completed: true }).eq('id', t.id); await fetchAll(); }} className="w-9 h-9 rounded-xl border-2 border-[#B45309]/30 flex items-center justify-center hover:bg-[#B45309] hover:border-[#B45309] hover:text-white transition-all text-transparent flex-shrink-0"><Check className="w-4 h-4" /></button>
-                    <span className="flex-1 font-black text-[#18181B] dark:text-white/95">{t.text}</span>
-                    <div className="flex opacity-0 group-hover:opacity-100 transition-all">
-                        <button onClick={() => setEditTodoModal(t)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500 rounded-xl"><Edit2 className="w-4 h-4" /></button>
-                        <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
+                {todos.length > 0 && (
+                  <div className="p-4 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[24px] shadow-sm dark:shadow-none space-y-2">
+                    <div className="flex justify-between text-xs font-black text-slate-400">
+                      <span>কেনাকাটার অগ্রগতি</span><span>{progress}% সম্পন্ন</span>
+                    </div>
+                    <div className="w-full h-3 bg-[#F9F4F0] dark:bg-zinc-900 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-[#B45309] to-emerald-500 rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
                     </div>
                   </div>
-                ))}
-
-                {todos.filter(t => t.isCompleted).length > 0 && (
-                  <>
-                    <div className="flex items-center gap-3 pt-2">
-                      <div className="flex-1 h-px bg-[#B45309]/10" />
-                      <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest">সম্পন্ন</span>
-                      <div className="flex-1 h-px bg-[#B45309]/10" />
-                    </div>
-                    {todos.filter(t => t.isCompleted).map(t => (
-                      <div key={t.id} className="flex items-center gap-4 p-5 bg-[#F9F4F0] dark:bg-black border border-[#B45309]/5 rounded-2xl opacity-60 group">
-                        <button onClick={async () => { await insforge.database.from('todos').update({ is_completed: false }).eq('id', t.id); await fetchAll(); }} className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white flex-shrink-0"><Check className="w-4 h-4" /></button>
-                        <span className="flex-1 font-black text-slate-400 dark:text-zinc-500 line-through">{t.text}</span>
-                        <div className="flex opacity-0 group-hover:opacity-100 transition-all">
-                            <button onClick={() => setEditTodoModal(t)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500 rounded-xl"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
-                        </div>
-                      </div>
-                    ))}
-                  </>
                 )}
-                {todos.length === 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  <button onClick={() => setBazarCatFilter('all')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 ${bazarCatFilter === 'all' ? 'bg-[#18181B] dark:bg-white text-white dark:text-black' : 'bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 text-slate-500'}`}>🛒 সব</button>
+                  {BAZAR_CATEGORIES.map(c => (
+                    <button key={c.id} onClick={() => setBazarCatFilter(c.id)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 ${bazarCatFilter === c.id ? 'bg-[#18181B] dark:bg-white text-white dark:text-black' : 'bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 text-slate-500'}`}>{c.emoji} {c.id}</button>
+                  ))}
+                </div>
+                <div className="flex gap-3 flex-wrap">
+                  <button onClick={() => setAddTaskModal(true)} className="bg-[#B45309] text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 hover:bg-[#92400E] transition-all shadow-lg shadow-[#B45309]/30 text-sm"><Plus className="w-4 h-4" /> আইটেম যোগ করুন</button>
+                  {completedTodos.length > 0 && (
+                    <button onClick={async () => { if (window.confirm(`${completedTodos.length}টি সম্পন্ন আইটেম মুছবেন?`)) { await Promise.all(completedTodos.map(t => insforge.database.from('todos').delete().eq('id', t.id))); await fetchAll(); }}} className="px-6 py-3 rounded-2xl font-black text-sm border border-rose-200 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all flex items-center gap-2"><Trash2 className="w-4 h-4" /> সম্পন্নগুলো মুছুন</button>
+                  )}
+                  {todos.filter(t => !t.isCompleted).length > 0 && (
+                    <a href={`https://wa.me/?text=${encodeURIComponent('🛒 বাজার তালিকা:\n' + todos.filter(t => !t.isCompleted).map((t, i) => `${i+1}. ${t.text}${t.quantity ? ` (${t.quantity})` : ''}${t.estimated_price > 0 ? ` ~৳${t.estimated_price}` : ''}`).join('\n'))}`} target="_blank" rel="noreferrer" className="px-6 py-3 rounded-2xl font-black text-sm border border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all flex items-center gap-2">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.196-.196.397-.4.596-.605.199-.205.267-.347.4-.578.133-.232.065-.413 0-.578-.065-.165-.598-1.438-.816-1.973-.215-.527-.436-.456-.6-.464-.163-.006-.351-.008-.54-.008-.189 0-.494.071-.754.356-.26.285-1 .978-1 2.38s1.024 2.76 1.166 2.95c.14.19 2.006 3.06 4.862 4.294.68.293 1.209.467 1.622.599.682.217 1.303.186 1.794.113.548-.082 1.758-.719 2.006-1.413.248-.694.248-1.288.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.01 2C6.477 2 2 6.477 2 12.01c0 1.754.459 3.399 1.258 4.832L2.003 22l5.315-1.215A9.956 9.956 0 0012.01 22C17.543 22 22 17.523 22 12.01S17.543 2 12.01 2zm0 18.02a8.028 8.028 0 01-4.09-1.115l-.294-.175-3.145.72.767-3.064-.19-.31A8.014 8.014 0 014 12.01C4 7.58 7.58 4 12.01 4S20.02 7.58 20.02 12.01 16.44 20.02 12.01 20.02z"/></svg>
+                      WhatsApp
+                    </a>
+                  )}
+                </div>
+                {filtered.length === 0 && todos.filter(t => !t.isCompleted).length === 0 ? (
                   <div className="text-center py-20 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px]">
                     <ListOrdered className="w-16 h-16 text-slate-200 dark:text-zinc-700 mx-auto mb-4" />
                     <p className="text-slate-400 dark:text-zinc-500 font-black uppercase text-xs tracking-widest">বাজার তালিকা খালি</p>
                   </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filtered.map(t => {
+                      const pr = PRIORITIES.find(p => p.id === t.priority) || PRIORITIES[1];
+                      const cat = BAZAR_CATEGORIES.find(c => c.id === t.category);
+                      return (
+                        <div key={t.id} className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none group hover:border-[#B45309]/30 transition-all">
+                          <button onClick={async () => { await insforge.database.from('todos').update({ is_completed: true }).eq('id', t.id); await fetchAll(); }} className="w-9 h-9 rounded-xl border-2 border-[#B45309]/30 flex items-center justify-center hover:bg-[#B45309] hover:border-[#B45309] hover:text-white transition-all text-transparent flex-shrink-0"><Check className="w-4 h-4" /></button>
+                          <span className="text-xl flex-shrink-0">{cat?.emoji || '📦'}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-black text-[#18181B] dark:text-white/95 truncate">{t.text}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              {t.quantity && <span className="text-[10px] font-black text-slate-400 bg-[#F9F4F0] dark:bg-zinc-900 px-2 py-0.5 rounded-full">{t.quantity}</span>}
+                              {t.estimated_price > 0 && <span className="text-[10px] font-black text-[#B45309]">~{currency}{t.estimated_price}</span>}
+                              <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${pr.color}`}>{pr.dot} {pr.label}</span>
+                            </div>
+                          </div>
+                          <div className="flex opacity-0 group-hover:opacity-100 transition-all gap-1">
+                            <button onClick={() => setEditTaskModal(t)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500 rounded-xl"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {completedTodos.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-3 pt-2">
+                      <div className="flex-1 h-px bg-[#B45309]/10" />
+                      <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest">কেনা হয়েছে ({completedTodos.length}টি)</span>
+                      <div className="flex-1 h-px bg-[#B45309]/10" />
+                    </div>
+                    <div className="space-y-2">
+                      {completedTodos.map(t => {
+                        const cat = BAZAR_CATEGORIES.find(c => c.id === t.category);
+                        return (
+                          <div key={t.id} className="flex items-center gap-4 p-4 bg-[#F9F4F0] dark:bg-black border border-[#B45309]/5 rounded-2xl opacity-60 group">
+                            <button onClick={async () => { await insforge.database.from('todos').update({ is_completed: false }).eq('id', t.id); await fetchAll(); }} className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white flex-shrink-0"><Check className="w-4 h-4" /></button>
+                            <span className="text-xl flex-shrink-0">{cat?.emoji || '📦'}</span>
+                            <div className="flex-1">
+                              <p className="font-black text-slate-400 dark:text-zinc-500 line-through">{t.text}</p>
+                              {(t.quantity || t.estimated_price > 0) && <p className="text-[10px] text-slate-400">{t.quantity}{t.estimated_price > 0 ? ` · ~${currency}${t.estimated_price}` : ''}</p>}
+                            </div>
+                            <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ══════════════ ANALYTICS ══════════════ */}
           {activeTab === 'analytics' && (
@@ -2005,7 +2029,157 @@ export default function AppOverview() {
         )}
       </AnimatePresence>
       <AnimatePresence>
+        {addBudgetModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setAddBudgetModal(false); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setAddBudgetModal(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><Target className="w-6 h-6 text-[#B45309]" /> নতুন বাজেট সেট</h3>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const fm = new FormData(e.currentTarget);
+                const cat = fm.get('category') as string;
+                const limit = Number(fm.get('limit'));
+                if (!limit) return;
+                const existing = budgets.find(b => b.category === cat);
+                if (existing) await insforge.database.from('budgets').update({ monthly_limit: limit }).eq('id', existing.id);
+                else await insforge.database.from('budgets').insert({ category: cat, monthly_limit: limit, user_id: currentUser!.id });
+                await fetchAll();
+                setAddBudgetModal(false);
+              }} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
+                  <select name="category" className={inputCls + " w-full mt-2 appearance-none"}>
+                    {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.id}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">মাসিক লিমিট ({currency})</label>
+                  <input name="limit" type="number" required className={inputCls + " w-full mt-2"} placeholder="5000" />
+                </div>
+                <button type="submit" className="w-full bg-[#B45309] text-white font-black py-4 rounded-2xl mt-2 flex items-center justify-center gap-2 shadow-xl shadow-[#B45309]/30 hover:bg-[#92400E] transition-all"><Check className="w-5 h-5" /> সেট করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {addGoalModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setAddGoalModal(false); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setAddGoalModal(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><PiggyBank className="w-6 h-6 text-[#B45309]" /> নতুন সঞ্চয় লক্ষ্য</h3>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const fm = new FormData(e.currentTarget);
+                const name = (fm.get('name') as string).trim();
+                const target = Number(fm.get('target'));
+                if (!name || !target) return;
+                await insforge.database.from('goals').insert({ name, target, saved: Number(fm.get('saved')) || 0, user_id: currentUser!.id });
+                await fetchAll();
+                setAddGoalModal(false);
+              }} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">লক্ষ্যের নাম *</label>
+                  <input name="name" required className={inputCls + " w-full mt-2"} placeholder="যেমন: ল্যাপটপ, ভ্রমণ..." autoFocus />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">টার্গেট ({currency})</label>
+                    <input name="target" type="number" required className={inputCls + " w-full mt-2"} placeholder="৳ 0" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">এখন জমা ({currency})</label>
+                    <input name="saved" type="number" className={inputCls + " w-full mt-2"} placeholder="৳ 0" />
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-[#B45309] text-white font-black py-4 rounded-2xl mt-2 flex items-center justify-center gap-2 shadow-xl shadow-[#B45309]/30 hover:bg-[#92400E] transition-all"><PiggyBank className="w-5 h-5" /> লক্ষ্য যুক্ত করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {addRecurringModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setAddRecurringModal(false); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setAddRecurringModal(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><RefreshCw className="w-6 h-6 text-[#B45309]" /> নতুন রিকারিং বিল</h3>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const fm = new FormData(e.currentTarget);
+                const { error } = await insforge.database.from('subscriptions').insert({ name: fm.get('name') as string, amount: Number(fm.get('amount')), next_date: new Date(fm.get('date') as string).toISOString(), user_id: currentUser!.id });
+                if (!error) { await fetchAll(); setAddRecurringModal(false); }
+              }} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">বিলের নাম *</label>
+                  <input name="name" required className={inputCls + " w-full mt-2"} placeholder="Netflix, WiFi, বিদ্যুৎ..." autoFocus />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ ({currency})</label>
+                    <input name="amount" type="number" required className={inputCls + " w-full mt-2"} placeholder="৳ 0" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরবর্তী তারিখ</label>
+                    <input name="date" type="date" required className={inputCls + " w-full mt-2"} />
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-[#B45309] text-white font-black py-4 rounded-2xl mt-2 flex items-center justify-center gap-2 shadow-xl shadow-[#B45309]/30 hover:bg-[#92400E] transition-all"><RefreshCw className="w-5 h-5" /> শিডিউল করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {addDebtModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setAddDebtModal(false); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setAddDebtModal(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><Briefcase className="w-6 h-6 text-[#B45309]" /> নতুন ধার হিসাব</h3>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const fm = new FormData(e.currentTarget);
+                const { error } = await insforge.database.from('debts').insert({ person: fm.get('person') as string, amount: Number(fm.get('amount')), type: fm.get('type') as string, note: fm.get('note') as string, user_id: currentUser!.id });
+                if (!error) { await fetchAll(); setAddDebtModal(false); }
+              }} className="space-y-4">
+                <div className="relative">
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ব্যক্তির নাম *</label>
+                  <input name="person" required className={inputCls + " w-full mt-2"} placeholder="নাম লিখুন..." value={debtNameSearch} onChange={e => { setDebtNameSearch(e.target.value); setShowDebtSuggestions(true); }} onFocus={() => setShowDebtSuggestions(true)} onBlur={() => setTimeout(() => setShowDebtSuggestions(false), 200)} autoFocus />
+                  {showDebtSuggestions && debtNameSearch && Array.from(new Set(debts.map(d => d.person))).filter(p => p.toLowerCase().includes(debtNameSearch.toLowerCase()) && p !== debtNameSearch).length > 0 && (
+                    <div className="absolute top-full mt-1 w-full bg-white dark:bg-zinc-900 border border-[#B45309]/10 dark:border-white/10 rounded-2xl shadow-xl z-50 overflow-hidden">
+                      {Array.from(new Set(debts.map(d => d.person))).filter(p => p.toLowerCase().includes(debtNameSearch.toLowerCase()) && p !== debtNameSearch).slice(0, 5).map((p, i) => (
+                        <button type="button" key={i} onClick={() => { setDebtNameSearch(p); setShowDebtSuggestions(false); }} className="w-full text-left px-4 py-3 hover:bg-[#F9F4F0] dark:hover:bg-black font-black text-sm">{p}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ *</label>
+                    <input name="amount" type="number" required className={inputCls + " w-full mt-2"} placeholder="৳ 0" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ধরণ</label>
+                    <div className="grid grid-cols-2 gap-2 mt-2 h-[52px]">
+                      <label className="relative flex items-center justify-center bg-[#F9F4F0] dark:bg-black rounded-2xl cursor-pointer font-black text-[10px] uppercase tracking-widest"><input type="radio" name="type" value="lent" defaultChecked className="hidden peer" /><span className="peer-checked:text-emerald-600">পাওনা</span><div className="absolute inset-0 border-2 border-transparent peer-checked:border-emerald-500 rounded-2xl" /></label>
+                      <label className="relative flex items-center justify-center bg-[#F9F4F0] dark:bg-black rounded-2xl cursor-pointer font-black text-[10px] uppercase tracking-widest"><input type="radio" name="type" value="borrowed" className="hidden peer" /><span className="peer-checked:text-rose-600">দেনা</span><div className="absolute inset-0 border-2 border-transparent peer-checked:border-rose-500 rounded-2xl" /></label>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">নোট</label>
+                  <input name="note" className={inputCls + " w-full mt-2"} placeholder="কারণ বা বিবরণ..." />
+                </div>
+                <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl mt-2 flex items-center justify-center gap-2 hover:scale-[1.02] transition-all"><UserPlus className="w-5 h-5 text-[#B45309]" /> যোগ করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
         {editBudgetModal && (
+
+
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-center justify-center p-4" onClick={(e) => { if(e.target === e.currentTarget) setEditBudgetModal(null); }}>
              <div className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
                 <button onClick={() => setEditBudgetModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
@@ -2096,11 +2270,106 @@ export default function AppOverview() {
              </div>
           </motion.div>
         )}
+      </AnimatePresence>      {/* ADD TASK / EDIT TASK MODALS */}
+      <AnimatePresence>
+        {addTaskModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setAddTaskModal(false); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setAddTaskModal(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><ListOrdered className="w-6 h-6 text-[#B45309]" /> নতুন আইটেম</h3>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const fm = new FormData(e.currentTarget);
+                const text = (fm.get('text') as string).trim();
+                if (!text) return;
+                await insforge.database.from('todos').insert({ text, is_completed: false, user_id: currentUser!.id, category: fm.get('category') as string, quantity: fm.get('quantity') as string, priority: fm.get('priority') as string, estimated_price: Number(fm.get('estimated_price')) || 0 });
+                await fetchAll();
+                setAddTaskModal(false);
+              }} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আইটেমের নাম *</label>
+                  <input name="text" required className={inputCls + " w-full mt-2"} placeholder="যেমন: আলু, চাল, ডিম..." autoFocus />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
+                    <select name="category" className={inputCls + " w-full mt-2 appearance-none"}>
+                      {BAZAR_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.id}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ</label>
+                    <input name="quantity" className={inputCls + " w-full mt-2"} placeholder="১ কেজি, ৫০০গ্রাম..." />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">প্রায়োরিটি</label>
+                    <select name="priority" className={inputCls + " w-full mt-2 appearance-none"}>
+                      {PRIORITIES.map(p => <option key={p.id} value={p.id}>{p.dot} {p.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আনুমানিক (৳)</label>
+                    <input type="number" name="estimated_price" className={inputCls + " w-full mt-2"} placeholder="০" min="0" />
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-[#B45309] text-white font-black py-4 rounded-2xl mt-2 flex items-center justify-center gap-2 shadow-xl shadow-[#B45309]/30 hover:bg-[#92400E] transition-all"><Plus className="w-5 h-5" /> যোগ করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {editTaskModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setEditTaskModal(null); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setEditTaskModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><Edit2 className="w-6 h-6 text-emerald-500" /> এডিট আইটেম</h3>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const fm = new FormData(e.currentTarget);
+                await insforge.database.from('todos').update({ text: (fm.get('text') as string).trim(), category: fm.get('category') as string, quantity: fm.get('quantity') as string, priority: fm.get('priority') as string, estimated_price: Number(fm.get('estimated_price')) || 0 }).eq('id', editTaskModal.id);
+                await fetchAll();
+                setEditTaskModal(null);
+              }} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আইটেমের নাম *</label>
+                  <input name="text" required defaultValue={editTaskModal.text} className={inputCls + " w-full mt-2"} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
+                    <select name="category" defaultValue={editTaskModal.category} className={inputCls + " w-full mt-2 appearance-none"}>
+                      {BAZAR_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.id}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ</label>
+                    <input name="quantity" defaultValue={editTaskModal.quantity} className={inputCls + " w-full mt-2"} placeholder="১ কেজি..." />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">প্রায়োরিটি</label>
+                    <select name="priority" defaultValue={editTaskModal.priority} className={inputCls + " w-full mt-2 appearance-none"}>
+                      {PRIORITIES.map(p => <option key={p.id} value={p.id}>{p.dot} {p.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আনুমানিক (৳)</label>
+                    <input type="number" name="estimated_price" defaultValue={editTaskModal.estimated_price || 0} className={inputCls + " w-full mt-2"} min="0" />
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl mt-2 flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">আপডেট করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
-
-
       {/* SHOP CREDIT MODALS */}
+
       <AnimatePresence>
         {addShopModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setAddShopModal(false); }}>
@@ -2142,21 +2411,33 @@ export default function AppOverview() {
 
       <AnimatePresence>
         {payShopModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setPayShopModal(null); }}>
-            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
-              <button onClick={() => setPayShopModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={e => { if (e.target === e.currentTarget) setPayShopModal(null); }}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 300 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 300 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="w-full max-w-[480px] bg-[#F9F4F0] dark:bg-black border-t sm:border border-[#B45309]/20 rounded-t-[32px] sm:rounded-[48px] p-6 sm:p-10 shadow-2xl relative">
+              <button onClick={() => setPayShopModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 border border-slate-100 dark:border-zinc-800"><X className="w-5 h-5"/></button>
               <h3 className="text-2xl font-black mb-1">টাকা পরিশোধ</h3>
               <p className="text-sm text-slate-400 font-medium mb-6">{payShopModal.shop_name} — বাকি: {currency}{(payShopModal.total_amount - payShopModal.paid_amount).toLocaleString()}</p>
               <form onSubmit={handlePayShopCredit} className="space-y-4">
-                <div>
-                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">কত টাকা দিলেন?</label>
-                  <input name="amount" type="number" required max={payShopModal.total_amount - payShopModal.paid_amount} className={`${inputCls} w-full mt-2`} placeholder={`সর্বোচ্চ: ${currency}${payShopModal.total_amount - payShopModal.paid_amount}`} />
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">কিস্তির পরিমাণ</label>
+                    <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 p-4 rounded-2xl">
+                      <span className="text-xl font-black text-[#B45309]">{currency}</span>
+                      <input name="amount" type="number" required autoFocus max={payShopModal.total_amount - payShopModal.paid_amount} className="flex-1 bg-transparent border-none font-black text-xl outline-none" defaultValue={payShopModal.total_amount - payShopModal.paid_amount} />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ওয়ালেট থেকে খরচ</label>
+                    <select name="wallet_id" className="w-full bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 p-4 rounded-2xl font-black text-sm outline-none">
+                      <option value="">কোন ওয়ালেট সিলেক্ট করুন (ঐচ্ছিক)</option>
+                      {WALLETS_INITIAL.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">নোট</label>
+                    <input name="note" className="w-full bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 p-4 rounded-2xl font-black text-sm outline-none" placeholder="বিবরণ..." />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">নোট</label>
-                  <input name="note" className={`${inputCls} w-full mt-2`} placeholder="বিবরণ..." />
-                </div>
-                <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl">নিশ্চিত করুন</button>
+                <button type="submit" className="w-full bg-[#18181B] dark:bg-zinc-900 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-black transition-all">পরিশোধ নিশ্চিত করুন</button>
               </form>
             </motion.div>
           </motion.div>
@@ -2219,6 +2500,70 @@ export default function AppOverview() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {addGoalContributionModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setAddGoalContributionModal(null)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 300 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 300 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="w-full max-w-[480px] bg-[#F9F4F0] dark:bg-black border-t sm:border border-[#B45309]/20 rounded-t-[32px] sm:rounded-[48px] p-6 sm:p-10 shadow-2xl relative">
+              <button onClick={() => setAddGoalContributionModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 border border-slate-100 dark:border-zinc-800"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-1">সঞ্চয় জমা করুন</h3>
+              <p className="text-sm text-slate-400 font-medium mb-6">{addGoalContributionModal.name} — লক্ষ্য: {currency}{addGoalContributionModal.target.toLocaleString()}</p>
+              <form onSubmit={handleAddGoalContribution} className="space-y-4">
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">জমার পরিমাণ</label>
+                    <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 p-4 rounded-2xl">
+                      <span className="text-xl font-black text-[#B45309]">{currency}</span>
+                      <input name="amount" type="number" required autoFocus className="flex-1 bg-transparent border-none font-black text-xl outline-none" placeholder="0" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ওয়ালেট থেকে কর্তন</label>
+                    <select name="wallet_id" className="w-full bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 p-4 rounded-2xl font-black text-sm outline-none">
+                      <option value="">ওয়ালেট সিলেক্ট করুন (ঐচ্ছিক)</option>
+                      {WALLETS_INITIAL.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">নোট</label>
+                    <input name="note" className="w-full bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 p-4 rounded-2xl font-black text-sm outline-none" placeholder="বিবরণ..." />
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-[#18181B] dark:bg-zinc-900 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-black transition-all">জমা নিশ্চিত করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {goalHistoryModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setGoalHistoryModal(null)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 300 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 300 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="w-full max-w-[520px] bg-[#F9F4F0] dark:bg-black border-t sm:border border-[#B45309]/20 rounded-t-[32px] sm:rounded-[48px] p-6 sm:p-10 shadow-2xl relative max-h-[85vh] flex flex-col">
+              <button onClick={() => setGoalHistoryModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 border border-slate-100 dark:border-zinc-800"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-1">সঞ্চয় হিস্ট্রি</h3>
+              <p className="text-sm text-slate-400 font-medium mb-6">{goalHistoryModal.name}</p>
+              <div className="overflow-y-auto space-y-3 flex-1 pr-2">
+                {(!goalHistoryModal.payments || goalHistoryModal.payments.length === 0) ? (
+                  <div className="text-center py-20">
+                    <PiggyBank className="w-16 h-16 text-slate-100 dark:text-zinc-800 mx-auto mb-4" />
+                    <p className="text-slate-400 dark:text-zinc-500 font-black uppercase text-xs tracking-widest">এখনো কোনো জমা নেই</p>
+                  </div>
+                ) : goalHistoryModal.payments.map((p: any) => (
+                  <div key={p.id} className="p-5 bg-white dark:bg-zinc-950 border border-[#B45309]/10 rounded-3xl flex justify-between items-center group hover:border-[#B45309]/30 transition-all">
+                    <div>
+                      <p className="font-black text-xl text-[#18181B] dark:text-white/95">{currency}{p.amount.toLocaleString()}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{format(new Date(p.date), 'do MMM yyyy, hh:mm a', { locale: bn })}</p>
+                      {p.note && <p className="text-xs text-[#B45309] font-bold mt-1">"{p.note}"</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
       {/* ══════════════ MOBILE BOTTOM NAV ══════════════ */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-zinc-950 border-t border-[#B45309]/10 dark:border-white/10 px-2 py-2 safe-area-inset-bottom shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.08)]">

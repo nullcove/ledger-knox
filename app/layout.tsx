@@ -19,12 +19,54 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Ledger Knox — স্মার্ট হিসাব, লাক্সারি ডিজাইন',
-  description: 'Ledger Knox একটি প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার। রিয়েল-টাইম ডাটা, স্মার্ট বিশ্লেষণ এবং ১০০% ফ্রি।',
-  keywords: ['হিসাব', 'ফিন্যান্স', 'বাজেট', 'টাকা ট্র্যাকার', 'ledger knox'],
-  authors: [{ name: 'Riyad Hossain Huzaifa' }],
+  metadataBase: new URL('https://ledgerknox.nullcove.com'),
+  title: {
+    default: 'Ledger Knox — স্মার্ট হিসাব, লাক্সারি ডিজাইন',
+    template: '%s | Ledger Knox',
+  },
+  description: 'Ledger Knox একটি প্রিমিয়াম বাংলা ফিন্যান্সিয়াল ট্র্যাকার। রিয়েল-টাইম ডাটা, স্মার্ট বাজেট বিশ্লেষণ, ধার-দেনা ট্র্যাকিং এবং বাজার তালিকা — সম্পূর্ণ ফ্রি।',
+  keywords: ['হিসাব', 'ফিন্যান্স', 'বাজেট', 'টাকা ট্র্যাকার', 'ledger knox', 'বাজার তালিকা', 'ধার দেনা', 'expense tracker', 'bangla finance app'],
+  authors: [{ name: 'Riyad Hossain Huzaifa', url: 'https://ledgerknox.nullcove.com' }],
   creator: 'Riyad Hossain Huzaifa',
+  publisher: 'Ledger Knox',
   manifest: '/manifest.json',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Ledger Knox — স্মার্ট হিসাব, লাক্সারি ডিজাইন',
+    description: 'বাংলাদেশের সেরা প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার — সম্পূর্ণ ফ্রি। বাজেট, ধার, বাজার তালিকা সব এক জায়গায়।',
+    url: 'https://ledgerknox.nullcove.com',
+    siteName: 'Ledger Knox',
+    locale: 'bn_BD',
+    type: 'website',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Ledger Knox branding',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ledger Knox — স্মার্ট হিসাব, লাক্সারি ডিজাইন',
+    description: 'বাংলাদেশের সেরা প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার — সম্পূর্ণ ফ্রি। বাজেট, ধার, বাজার তালিকা সব এক জায়গায়।',
+    images: ['/opengraph-image'],
+    creator: '@nullcove',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -32,14 +74,9 @@ export const metadata: Metadata = {
     startupImage: '/icons/icon-512x512.png',
   },
   applicationName: 'Ledger Knox',
+  category: 'finance',
   formatDetection: {
     telephone: false,
-  },
-  openGraph: {
-    title: 'Ledger Knox — স্মার্ট হিসাব',
-    description: 'প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার — সম্পূর্ণ ফ্রি',
-    siteName: 'Ledger Knox',
-    type: 'website',
   },
   icons: {
     icon: [

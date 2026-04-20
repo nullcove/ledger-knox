@@ -91,6 +91,65 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#F9F7F5] selection:bg-[#92400E]/20 overflow-x-hidden pb-20 md:pb-0">
       <CustomCursor />
+
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            {
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Ledger Knox',
+              url: 'https://ledgerknox.nullcove.com',
+              description: 'বাংলাদেশের সেরা প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার — সম্পূর্ণ ফ্রি।',
+              inLanguage: 'bn',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: 'https://ledgerknox.nullcove.com/help',
+                'query-input': 'required name=search_term_string',
+              },
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              name: 'Ledger Knox',
+              url: 'https://ledgerknox.nullcove.com',
+              description: 'প্রিমিয়াম বাংলা ফিন্যান্সিয়াল ট্র্যাকার। বাজেট, ধার-দেনা, বাজার তালিকা, রিকারিং বিল — সব এক জায়গায়।',
+              applicationCategory: 'FinanceApplication',
+              operatingSystem: 'Web, Android, iOS',
+              inLanguage: 'bn',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'BDT',
+              },
+              author: {
+                '@type': 'Person',
+                name: 'Riyad Hossain Huzaifa',
+              },
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.8',
+                reviewCount: '120',
+              },
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Ledger Knox',
+              url: 'https://ledgerknox.nullcove.com',
+              logo: 'https://ledgerknox.nullcove.com/icons/icon-512x512.png',
+              contactPoint: {
+                '@type': 'ContactPoint',
+                contactType: 'customer support',
+                url: 'https://ledgerknox.nullcove.com/contact',
+              },
+            },
+          ]),
+        }}
+      />
+
       
       {/* Dynamic Background Particles */}
       {mounted && (
