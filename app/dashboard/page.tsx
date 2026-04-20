@@ -10,7 +10,7 @@ import {
   Target, Menu, Sun, Moon, Briefcase, RefreshCw, LogOut, Calendar, UserPlus,
   ArrowUpRight, ArrowDownLeft, ArrowRight, Search, Filter, Loader2,
   ShieldCheck, AlertTriangle, CheckCircle2, Settings, Camera, Lock, Bell, History,
-  TrendingUp, ChevronLeft, ChevronRight as ChevronRightIcon, Star, Mail
+  TrendingUp, ChevronLeft, ChevronRight as ChevronRightIcon, Star, Mail, Globe, Globe2
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -271,7 +271,7 @@ const QUICK_ACTIONS = [
   { label: 'নাস্তা ৳৮০', category: 'খাবার', amount: 80, icon: Coffee },
 ];
 
-const SIDEBAR_ITEMS = [
+const SIDEBAR_ITEMS_BASE = [
   { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
   { id: 'transactions', label: 'লেনদেনসমূহ', icon: Receipt },
   { id: 'budget', label: 'বাজেট ও লিমিট', icon: Target },
@@ -419,6 +419,15 @@ export default function AppOverview() {
   const [profile, setProfile] = useState<Profile>({});
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Admin-only state
+  const isAdmin = currentUser?.email === 'me@nullcove.com';
+  const [siteStats, setSiteStats] = useState<{ totalViews: number; totalCountries: number }>({ totalViews: 0, totalCountries: 0 });
+
+  const SIDEBAR_ITEMS = [
+    ...SIDEBAR_ITEMS_BASE,
+    ...(isAdmin ? [{ id: 'functions', label: 'অন্যান্য ফাংশন', icon: Globe }] : []),
+  ];
 
   // Modal form state
   const [formType, setFormType] = useState<TransactionType>('expense');
@@ -937,7 +946,14 @@ export default function AppOverview() {
         <nav className="space-y-1">
           {SIDEBAR_ITEMS.map(item => (
             <button key={item.id}
-              onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
+              onClick={() => { 
+                if (item.id === 'functions') {
+                  router.push('/dashboard/functions');
+                } else {
+                  setActiveTab(item.id); 
+                }
+                setIsSidebarOpen(false); 
+              }}
               title={collapsed ? item.label : undefined}
               className={`w-full flex items-center ${collapsed ? 'justify-center px-3' : 'gap-4 px-5'} py-3.5 rounded-2xl transition-all relative group ${
                 activeTab === item.id ? 'bg-[#18181B] dark:bg-zinc-900 text-white shadow-xl dark:shadow-none shadow-black/20' : 'text-[#18181B]/40 dark:text-white/30 hover:bg-[#B45309]/5 hover:text-[#B45309]'
@@ -979,7 +995,7 @@ export default function AppOverview() {
         {!collapsed && (
           <div className="text-center">
             <p className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">Developer</p>
-            <p className="text-xs font-black text-[#18181B]/60 dark:text-white/50">Riyad Hossain Huzaifa</p>
+            <p className="text-xs font-black text-[#18181B]/60 dark:text-white/50">Nullcove</p>
           </div>
         )}
       </div>

@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: [
           '/',
           '/features',
-          '/pricing',
+          '/support',
           '/about',
           '/faq',
           '/help',
@@ -35,7 +35,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: [
           '/',
           '/features',
-          '/pricing',
+          '/support',
           '/about',
           '/faq',
           '/help',

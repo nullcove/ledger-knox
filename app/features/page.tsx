@@ -11,40 +11,34 @@ import CustomCursor from '@/components/CustomCursor';
 
 const FEATURES = [
   {
-    title: 'রিয়েল-টাইম ট্র্যাকিং',
-    desc: 'যেকোনো ডিভাইস থেকে ইনপুট দেওয়া মাত্রই আপনার সম্পদ ভল্টে আপডেট হয়ে যায়।',
+    title: 'রিয়েল-টাইম খরচের হিসাব',
+    desc: 'যেকোনো ডিভাইস থেকে ইনপুট দেওয়া মাত্রই আপনার আয় এবং ব্যয়ের হিসাব ভল্টে আপডেট হয়ে যায়। এটি একটি রিয়েল-টাইম টাকার ট্র্যাকার।',
     icon: Zap,
     color: 'text-amber-600 bg-amber-50'
   },
   {
-    title: 'নিরাপদ ক্লাউড সলিউশন',
-    desc: 'ইনসফোর্জ ক্লাউডের মাধ্যমে আপনার ডাটা থাকে হ্যাকিংমুক্ত ও সম্পুর্ণ এনক্রিপ্টেড।',
+    title: 'নিরাপদ ডিজিটাল ক্যাশবুক',
+    desc: 'ইনসফোর্জ ক্লাউডের মাধ্যমে আপনার প্রতিদিনের হিসাব থাকে হ্যাকিংমুক্ত ও সম্পুর্ণ এনক্রিপ্টেড। বাংলাদেশের সেরা নিরাপদ খাতা।',
     icon: Shield,
     color: 'text-indigo-600 bg-indigo-50'
   },
   {
-    title: 'স্মার্ট অ্যানালিটিক্স',
-    desc: 'স্বয়ংক্রিয়ভাবে আপনার খরচের ধরণ বুঝতে সাহায্য করে আমাদের কাস্টম বিল্ট চার্ট।',
+    title: 'আয় ব্যয়ের স্মার্ট অ্যানালিটিক্স',
+    desc: 'স্বয়ংক্রিয়ভাবে আপনার খরচের ধরণ বুঝতে সাহায্য করে আমাদের কাস্টম বিল্ট চার্ট ও ফিন্যান্সিয়াল রিপোর্ট।',
     icon: BarChart3,
     color: 'text-emerald-600 bg-emerald-50'
   },
   {
-    title: 'ডিজিটাল ওয়ালেট',
-    desc: 'বিকাশ, নগদ এবং ব্যাংক অ্যাকাউন্ট এক জায়গায় ম্যানেজ করার প্রিমিয়াম সুযোগ।',
+    title: 'ডিজিটাল ওয়ালেট ও খাতা',
+    desc: 'বিকাশ, নগদ এবং ব্যাংক অ্যাকাউন্ট এক জায়গায় ম্যানেজ করার জন্য এটি একটি প্রিমিয়াম অনলাইন ক্যাশবুক।',
     icon: Wallet,
     color: 'text-pink-600 bg-pink-50'
   },
   {
-    title: 'রিকারিং বিল রিমাইন্ডার',
-    desc: 'মাসিক বিলগুলো ভুলে যাওয়া এখন ইতিহাস। লেজার নক্স আপনাকে দিবে সময়মতো এলার্ট।',
+    title: 'রিকারিং বিল ও হিসাব রক্ষক',
+    desc: 'মাসিক বিলগুলো ভুলে যাওয়া এখন ইতিহাস। লেজার নক্স আপনাকে দিবে সময়মতো এলার্ট, জাস্ট আপনার হিসাব রক্ষকের মতো।',
     icon: Clock,
     color: 'text-blue-600 bg-blue-50'
-  },
-  {
-    title: 'গ্লোবাল এক্সেস',
-    desc: 'পৃথিবীর যেকোনো প্রান্ত থেকে আপনি আপনার পোর্টালে জয়েন করতে পারবেন।',
-    icon: Globe2,
-    color: 'text-purple-600 bg-purple-50'
   }
 ];
 
@@ -64,38 +58,105 @@ export default function FeaturesPage() {
       </nav>
 
       <main className="pt-48 pb-32 px-6">
-        <div className="max-w-7xl mx-auto space-y-32">
+        <div className="max-w-7xl mx-auto space-y-40">
           
           <section className="text-center space-y-10">
-             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#92400E]/5 text-[#92400E] text-[10px] font-black uppercase tracking-widest">Architectural Features</div>
-             <h1 className="text-7xl lg:text-[120px] font-black tracking-tighter leading-[0.85]">অতুলনীয় <br />সব <span className="text-[#92400E]">ক্ষমতা</span></h1>
-             <p className="text-2xl text-[#111827]/40 font-bold max-w-2xl mx-auto leading-relaxed">আমরা এমন সব টুল এবং আর্কিটেকচার তৈরি করেছি যা ফিন্যান্সিয়াল ট্র্যাকিং এর গ্লোবাল স্ট্যান্ডার্ডকে ছাড়িয়ে যাবে।</p>
+             <motion.div initial={{ y: 20, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#92400E]/5 text-[#92400E] text-[10px] font-black uppercase tracking-widest">Architectural Features</motion.div>
+             <h1 className="text-6xl lg:text-8xl font-black tracking-tighter leading-[0.85]">অতুলনীয় <br />সব <span className="text-[#92400E]">ক্ষমতা</span></h1>
+             <p className="text-2xl text-[#111827]/40 font-bold max-w-3xl mx-auto leading-relaxed">আমরা এমন সব টুল এবং আর্কিটেকচার তৈরি করেছি যা ফিন্যান্সিয়াল ট্র্যাকিং এর গ্লোবাল স্ট্যান্ডার্ডকে ছাড়িয়ে যাবে। শুধু খরচ ট্র্যাক করা নয়, আপনার সম্পদকে ডিজিটালভাবে সুরক্ষিত রাখাই আমাদের মিশন।</p>
           </section>
 
+          {/* Primary Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
              {FEATURES.map((f, i) => (
-                <div 
+                <motion.div 
                    key={i}
-                   className="p-16 bg-white rounded-[64px] border border-[#92400E]/5 shadow-sm space-y-10 hover:border-[#92400E]/30 transition-all hover:scale-105"
+                   initial={{ y: 30, opacity: 0 }}
+                   whileInView={{ y: 0, opacity: 1 }}
+                   transition={{ delay: i * 0.1 }}
+                   className="p-16 bg-white rounded-[64px] border border-[#92400E]/5 shadow-sm space-y-10 hover:border-[#92400E]/30 transition-all hover:scale-105 group"
                 >
-                   <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center ${f.color} shadow-sm`}>
+                   <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center ${f.color} shadow-sm group-hover:rotate-12 transition-transform`}>
                       <f.icon className="w-8 h-8" />
                    </div>
                    <div className="space-y-4">
                       <h3 className="text-3xl font-black">{f.title}</h3>
                       <p className="text-lg font-bold text-[#111827]/40 leading-relaxed">{f.desc}</p>
                    </div>
-                </div>
+                </motion.div>
              ))}
           </div>
 
+          {/* Deep Detail Section: Smart Budgeting */}
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+             <div className="space-y-10 order-2 lg:order-1">
+                <div className="w-20 h-2 bg-[#92400E]" />
+                <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">স্মার্ট বাজেট <br /><span className="text-[#92400E]">মেশিন।</span></h2>
+                <div className="space-y-8 text-xl font-bold text-[#111827]/60 leading-relaxed">
+                   <p>বাজেট করা মানেই কি কেনাকাটা বন্ধ করে দেওয়া? একদমই না। লেজার নক্স এর স্মার্ট অ্যালগরিদম আপনার স্পেন্ডিং প্যাটার্ন বিচার করে আপনাকে বলে দেয় কোথায় কতটুকু সেভ করা সম্ভব।</p>
+                   <ul className="space-y-6">
+                      <li className="flex items-start gap-4">
+                         <div className="mt-2 w-2 h-2 rounded-full bg-[#92400E] shrink-0" />
+                         <span>ক্যাটাগরি ভিত্তিক বাজেট সীমা নির্ধারণ এবং রিয়েল-টাইম এলার্ট।</span>
+                      </li>
+                      <li className="flex items-start gap-4">
+                         <div className="mt-2 w-2 h-2 rounded-full bg-[#92400E] shrink-0" />
+                         <span>অপ্রয়োজনীয় খরচ চিহ্নিত করে মানি-সেভিং টিপস প্রদান।</span>
+                      </li>
+                      <li className="flex items-start gap-4">
+                         <div className="mt-2 w-2 h-2 rounded-full bg-[#92400E] shrink-0" />
+                         <span>আপনার সেভিংস গোল এর অগ্রগতি ট্র্যাক করার জন্য প্রোগ্রেস বার।</span>
+                      </li>
+                   </ul>
+                </div>
+             </div>
+             <div className="bg-[#111827] rounded-[80px] p-10 md:p-20 relative overflow-hidden order-1 lg:order-2 aspect-square flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#92400E]/20 to-transparent" />
+                <BarChart3 className="w-40 h-40 md:w-64 md:h-64 text-white opacity-10 animate-pulse" />
+                <div className="relative z-10 glass-card p-10 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                   <p className="text-white/40 text-xs font-black uppercase tracking-widest mb-4">Monthly Goal</p>
+                   <h4 className="text-4xl font-black text-white mb-6">৳85,000</h4>
+                   <div className="w-full h-4 bg-white/10 rounded-full overflow-hidden">
+                      <motion.div initial={{ width: 0 }} whileInView={{ width: '75%' }} transition={{ duration: 2 }} className="h-full bg-[#92400E]" />
+                   </div>
+                   <p className="text-[#92400E] font-black text-sm mt-4">৭৫% অর্জিত হয়েছে</p>
+                </div>
+             </div>
+          </section>
+
+          {/* Deep Detail Section: MFS Integration */}
+          <section className="bg-white p-20 md:p-32 rounded-[80px] border border-[#92400E]/10 space-y-16 relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-[#92400E]/5 blur-[100px] rounded-full" />
+             <div className="max-w-4xl space-y-8">
+                <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">বিকাশ, নগদ এবং <br /><span className="text-[#92400E]">ব্যাংক অ্যাকাউন্ট।</span></h2>
+                <p className="text-2xl font-bold text-[#111827]/50 leading-relaxed">
+                   বাংলাদেশে আমরা অধিকাংশ সময় MFS এবং ক্যাশ লেনদেন করি। লেজার নক্স ডিজাইন করা হয়েছে বিশেষভাবে আমাদের লোকাল মার্কেটের কথা মাথায় রেখে। আপনার মাল্টিপল সোর্স থেকে আসা টাকাকে এক জায়গায় ম্যানেজ করা এখন পানির মতো সহজ।
+                </p>
+             </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                {[
+                  { title: 'মাল্টি ওয়ালেট', desc: 'একই সাথে ক্যাশ, ব্যাংক এবং MFS হিসাব আলাদাভাবে রাখুন।' },
+                  { title: 'স্মার্ট কারেন্সি', desc: 'টাকা ছাড়াও ডলার বা ইউরোতে হিসাব রাখার গ্লোবাল স্ট্যান্ডার্ড।' },
+                  { title: 'লেনদেন প্রোফাইল', desc: 'যাকে টাকা দিচ্ছেন বা যার থেকে নিচ্ছেন তার হিস্ট্রি সেভ করা।' },
+                  { title: 'বাকির খাতা', desc: 'দোকান বাকি বা ব্যক্তিগত ধার দেনার জন্য আলাদা ভল্ট।' }
+                ].map((item, i) => (
+                  <div key={i} className="space-y-4">
+                     <div className="w-12 h-1 bg-[#92400E]" />
+                     <h4 className="text-xl font-black">{item.title}</h4>
+                     <p className="text-sm font-bold text-[#111827]/40">{item.desc}</p>
+                  </div>
+                ))}
+             </div>
+          </section>
+
+          {/* Call to Action Section */}
           <section className="bg-[#111827] p-20 lg:p-32 rounded-[80px] text-white flex flex-col md:flex-row items-center gap-20 relative overflow-hidden group">
              <Star className="absolute -left-12 -bottom-12 w-64 h-64 text-[#92400E] opacity-10 group-hover:scale-110 transition-transform" />
              <div className="lg:w-1/2 space-y-10 relative z-10">
                 <h2 className="text-6xl lg:text-8xl font-black tracking-tighter leading-tight">ভবিষ্যৎ উপযোগী প্রযুক্তি</h2>
-                <p className="text-2xl text-white/40 font-bold leading-relaxed">আমরা প্রতিদিন আমাদের এলগরিদম আপডেট করি যাতে আপনার ডাটা থাকে নির্ভুল এবং দ্রুততম। রিয়াদ হোসেন হুজাইফার তত্ত্বাবধানে আমরা করছি নিরাপদ ডিজিটাল ডমিনেট।</p>
+                <p className="text-2xl text-white/40 font-bold leading-relaxed">আমরা প্রতিদিন আমাদের এলগরিদম আপডেট করি যাতে আপনার ডাটা থাকে নির্ভুল এবং দ্রুততম। Nullcove এর তত্ত্বাবধানে আমরা করছি নিরাপদ ডিজিটাল ডমিনেট। আমাদের কোডিং স্ট্যান্ডার্ড গ্লোবাল ফিন্যান্সিয়াল অ্যাপস এর সমতুল্য।</p>
                 <div className="flex flex-wrap gap-6 pt-10">
-                   {['অটো-ব্যাকআপ', 'স্মার্ট ডাইজেস্ট', 'কাস্টম গোলস'].map((tag, i) => (
+                   {['অটো-ব্যাকআপ', 'স্মার্ট ডাইজেস্ট', 'কাস্টম গোলস', 'AES-256'].map((tag, i) => (
                       <span key={i} className="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-xs font-black uppercase tracking-widest text-[#92400E]">{tag}</span>
                    ))}
                 </div>
@@ -111,7 +172,7 @@ export default function FeaturesPage() {
       </main>
 
       <footer className="py-12 border-t border-[#92400E]/5 text-center">
-         <p className="text-[10px] font-black text-[#111827]/20 uppercase tracking-[0.4em]">Designed by RIYAD HOSSAIN HUZAIFA &copy; 2026</p>
+         <p className="text-[10px] font-black text-[#111827]/20 uppercase tracking-[0.4em]">Designed by NULLCOVE &copy; 2026</p>
       </footer>
     </div>
   );

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'ফিচারসমূহ',
-  description: 'Ledger Knox এর সব প্রিমিয়াম ফিচার দেখুন — বাজেট ট্র্যাকিং, ধার-দেনা হিসাব, বাজার তালিকা, রিকারিং বিল, সঞ্চয় লক্ষ্য এবং আরো অনেক কিছু।',
+  title: 'ফিচারসমূহ | Ledger Knox',
+  description: 'Ledger Knox এর সব প্রিমিয়াম ফিচার দেখুন — স্মার্ট বাজেট ট্র্যাকিং, আয় ব্যয়ের হিসাব, ধার-দেনা ট্র্যাকার, ডিজিটাল বাজার তালিকা এবং রিকারিং বিল ম্যানেজমেন্ট।',
+  keywords: ['আয় ব্যয়ের হিসাব', 'বাজেট ট্র্যাকিং', 'ধার দেনা', 'বাজার তালিকা', 'expense tracker features', 'premium savings app'],
   alternates: {
     canonical: 'https://ledgerknox.nullcove.com/features',
   },
@@ -32,15 +33,9 @@ const softwareAppSchema = {
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'Web, Android, iOS',
   inLanguage: 'bn',
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'BDT',
-    description: 'সম্পূর্ণ বিনামূল্যে',
-  },
   author: {
     '@type': 'Person',
-    name: 'Riyad Hossain Huzaifa',
+    name: 'Nullcove',
     url: 'https://ledgerknox.nullcove.com/about',
   },
   aggregateRating: {

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'আমাদের সম্পর্কে',
-  description: 'Ledger Knox তৈরির পেছনের গল্প। একটি বাংলা প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার যা আপনার আর্থিক জীবনকে স্মার্ট করে তোলে।',
+  title: 'আমাদের সম্পর্কে | Ledger Knox',
+  description: 'Ledger Knox তৈরির পেছনের গল্প। একটি বাংলা প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার যা আপনার আর্থিক জীবনকে স্মার্ট করে তোলে। Nullcove এর ডিজাইন করা বাংলাদেশের সেরা ক্যাশবুক অ্যাপ।',
+  keywords: ['nullcove', 'ledger knox history', 'bangladeshi developer', 'আয় ব্যয়ের হিসাব', 'premium finance app'],
   alternates: {
     canonical: 'https://ledgerknox.nullcove.com/about',
   },
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
 const personSchema = {
   '@context': 'https://schema.org',
   '@type': 'Person',
-  name: 'Riyad Hossain Huzaifa',
+  name: 'Nullcove',
   url: 'https://ledgerknox.nullcove.com/about',
   jobTitle: 'Software Developer & UI/UX Designer',
   description: 'Ledger Knox এর স্রষ্টা — একজন বাংলাদেশী সফটওয়্যার ডেভেলপার ও ডিজাইনার।',

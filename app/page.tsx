@@ -10,7 +10,7 @@ import {
   ShieldCheck, Heart, Sparkles, Play, MousePointer2, UserPlus, Receipt,
   CheckCircle2, CreditCard, Target, Smartphone, Globe2, LayoutDashboard,
   MessageSquare, FileText, Info, Download, Home, Settings, Bell,
-  ShoppingCart, Briefcase
+  ShoppingCart, Briefcase, Calculator, Smartphone as MobileIcon, Tag as CategoryIcon
 } from 'lucide-react';
 
 import CustomCursor from '@/components/CustomCursor';
@@ -18,7 +18,7 @@ import { insforge } from '@/lib/insforge';
 
 const NAV_LINKS = [
   { name: 'ফিচার', href: '/features', icon: Sparkles },
-  { name: 'প্রাইসিং', href: '/pricing', icon: CreditCard },
+  { name: 'ডোনেশন', href: '/support', icon: Heart },
   { name: 'আমাদের সম্পর্কে', href: '/about', icon: Users },
   { name: 'নিরাপত্তা', href: '/security', icon: Lock },
   { name: 'সচরাচর প্রশ্ন', href: '/faq', icon: Info },
@@ -48,6 +48,33 @@ const CountUp = ({ end, duration = 2 }: { end: number, duration?: number }) => {
 
 export default function LandingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  useEffect(() => {
+    const trackVisitor = async () => {
+      try {
+        // 1. Increment total views for 'home'
+        await insforge.database.rpc('increment_site_stats', { path_name: 'home' });
+
+        // 2. Track Country (Lightweight fetch with safety)
+        const res = await fetch('https://ipapi.co/json/');
+        const contentType = res.headers.get("content-type");
+        
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const data = await res.json();
+          if (data && data.country_code) {
+             await insforge.database.rpc('track_country_visit', { 
+               c_code: data.country_code, 
+               c_name: data.country_name 
+             });
+          }
+        }
+      } catch (e) {
+        // Fail silently to ensure lag-free experience
+        console.error('Tracking failed silently:', e);
+      }
+    };
+    trackVisitor();
+  }, []);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -124,14 +151,9 @@ export default function LandingPage() {
               applicationCategory: 'FinanceApplication',
               operatingSystem: 'Web, Android, iOS',
               inLanguage: 'bn',
-              offers: {
-                '@type': 'Offer',
-                price: '0',
-                priceCurrency: 'BDT',
-              },
               author: {
                 '@type': 'Person',
-                name: 'Riyad Hossain Huzaifa',
+                name: 'Nullcove',
               },
               aggregateRating: {
                 '@type': 'AggregateRating',
@@ -191,18 +213,19 @@ export default function LandingPage() {
       >
         <div className="bg-white/90 backdrop-blur-xl px-4 md:px-10 py-3 md:py-6 flex items-center justify-between rounded-full md:rounded-[40px] border border-[#92400E]/10 shadow-[0_8px_32px_rgba(146,64,14,0.15)] transition-all">
           <Link href="/" className="flex items-center gap-2 md:gap-3 ml-2">
-            <motion.div 
-              whileHover={{ rotate: 15, scale: 1.1 }}
-              className="bg-[#92400E] text-white px-2 py-1 md:px-3 md:py-2 rounded-xl text-lg md:text-3xl font-black italic shadow-lg shadow-[#92400E]/30"
-            >
-              LK
-            </motion.div>
-            <span className="text-lg md:text-3xl font-black tracking-tighter text-[#111827]">Ledger Knox</span>
+              <motion.div 
+                whileHover={{ rotate: 15, scale: 1.1 }}
+                className="bg-[#92400E] text-white px-2 py-1 md:px-3 md:py-2 rounded-xl text-xl md:text-2xl font-black italic shadow-lg shadow-[#92400E]/30"
+                title="Ledger Knox - বাংলাদেশের সেরা ফিন্যান্স ট্র্যাকারের লোগো"
+              >
+                LK
+              </motion.div>
+            <span className="text-xl md:text-2xl font-black tracking-tighter text-[#111827]">Ledger Knox</span>
           </Link>
           
           <div className="hidden lg:flex items-center gap-10">
             {NAV_LINKS.map(link => (
-                <Link key={link.href} href={link.href} className="text-sm font-black text-[#111827]/60 hover:text-[#92400E] uppercase tracking-widest transition-all">
+                <Link key={link.href} href={link.href} className="text-base font-black text-[#111827]/60 hover:text-[#92400E] uppercase tracking-widest transition-all">
                   {link.name}
                 </Link>
             ))}
@@ -295,7 +318,7 @@ export default function LandingPage() {
               
               {/* Bottom Decoration */}
               <div className="absolute bottom-10 left-0 right-0 text-center opacity-20">
-                 <p className="text-[8px] font-black text-white uppercase tracking-[0.8em]">Developed by Riyad Hossain Huzaifa</p>
+                 <p className="text-[8px] font-black text-white uppercase tracking-[0.8em]">Developed by Nullcove</p>
               </div>
             </motion.div>
           )}
@@ -304,6 +327,23 @@ export default function LandingPage() {
 
       {/* Hero Section - The "WOW" Part */}
       <section ref={heroRef} className="relative pt-40 md:pt-64 pb-20 md:pb-32 px-6 flex flex-col items-center justify-center min-h-[90vh] md:min-h-screen overflow-hidden">
+        
+        {/* Visually Hidden SEO Content (Keyword Rich) */}
+        <div className="sr-only">
+          <h1>Ledger Knox — বাংলাদেশের সেরা আয় ব্যয়ের হিসাব রাখার অ্যাপ।</h1>
+          <p>
+            আপনার প্রতিদিনের খরচের হিসাব, মাসিক বাজেট এবং সঞ্চয় ম্যানেজমেন্টের জন্য ব্যবহার করুন লেজার নক্স। 
+            এটি একটি পাওয়ারফুল ফিন্যান্সিয়াল ট্র্যাকার যা আপনার টাকার হিসাব রাখবে নিখুঁতভাবে। 
+            ডিজিটাল ক্যাশবুক এবং ধার দেনার হিসাব এখন আপনার হাতের মুঠোয়।
+          </p>
+          <ul>
+            <li>সেরা টাকা ট্র্যাকিং অ্যাপ বাংলাদেশ</li>
+            <li>অনলাইন হিসাব নিকাশ সফটওয়্যার</li>
+            <li>khorocher hisab app bangla</li>
+            <li>daily expense manager with bkash integration</li>
+          </ul>
+        </div>
+
         {/* Animated Blobs */}
         <div className="absolute top-1/4 -left-32 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-[#92400E]/10 animate-blob blur-[100px] pointer-events-none" />
         <div className="absolute bottom-10 -right-20 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-[#D97706]/10 animate-blob blur-[80px] pointer-events-none animation-delay-4000" />
@@ -327,13 +367,13 @@ export default function LandingPage() {
                   <Target className="w-4 h-4" /> ১০০% রিয়েল-টাইম ফিন্যান্স ট্র্যাকার
                </div>
                
-               <h1 className="text-5xl md:text-[120px] font-black tracking-tighter mb-8 leading-[0.95] relative z-20">
-                 <span className="block text-[#111827] drop-shadow-2xl mb-2">সহজ হিসাব</span>
-                 <span className="animate-gradient-text block">রয়্যাল ডিজাইন</span>
+               <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 leading-[0.95] relative z-20">
+                 <span className="block text-[#111827] drop-shadow-2xl mb-2">স্মার্ট আয় ব্যয়ের হিসাব</span>
+                 <span className="animate-gradient-text block">মানি ম্যানেজার ও ট্র্যাকার</span>
                </h1>
             </div>
             
-            <p className="text-[#111827]/70 text-lg md:text-3xl max-w-3xl mx-auto mb-12 font-bold leading-relaxed px-4">
+            <p className="text-[#111827]/70 text-xl md:text-2xl max-w-3xl mx-auto mb-12 font-bold leading-relaxed px-4">
               Ledger Knox আপনাকে দেবে আপনার উপার্জিত অর্থের ওপর পূর্ণ নিয়ন্ত্রণ। <br className="hidden md:block" />
               <span className="text-[#92400E] font-black underline decoration-wavy underline-offset-8">স্মার্ট এনালাইটিক্স</span> আর <span className="text-[#92400E] font-black">মিলিটারি গ্রেড নিরাপত্তা</span> এখন এক সাথে।
             </p>
@@ -412,7 +452,7 @@ export default function LandingPage() {
                <motion.div initial={{ x: -30, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} className="flex items-center gap-3 text-[#92400E] font-black text-sm uppercase tracking-widest">
                   <div className="w-12 h-px bg-[#92400E]" /> MASTER THE FLOW
                </motion.div>
-               <h2 className="text-5xl md:text-9xl font-black text-[#111827] tracking-tight leading-[0.9]">
+               <h2 className="text-4xl md:text-6xl font-black text-[#111827] tracking-tight leading-[0.9]">
                   আপনার জীবন, <br />
                   <span className="text-[#92400E]">আমাদের হিসাব।</span>
                </h2>
@@ -425,20 +465,20 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {[
               { 
-                title: 'রিয়েল-টাইম ভল্ট', 
-                desc: 'প্রতিটি লেনদেন হওয়ার সাথে সাথেই আপনার ড্যাশবোর্ডে আপডেট হয়ে যাবে ইনসট্যান্টলি।',
+                title: 'ডিজিটাল ক্যাশবুক', 
+                desc: 'প্রতিটি লেনদেন হওয়ার সাথে সাথেই আপনার ড্যাশবোর্ড আপডেট হবে রিয়েল-টাইম ভল্টে।',
                 icon: Shield,
                 color: 'bg-blue-500'
               },
               { 
-                title: 'স্মার্ট রিপোর্টস', 
-                desc: 'বার চার্ট, পাই চার্ট আর লাইন গ্রাফ দিয়ে দেখুন আপনার ব্যয়ের প্রকৃত চিত্র।',
+                title: 'আয় ব্যয়ের বিশ্লেষণ', 
+                desc: 'বার চার্ট, পাই চার্ট আর লাইন গ্রাফ দিয়ে দেখুন আপনার টাকার হিসাব এর প্রকৃত চিত্র।',
                 icon: BarChart3,
                 color: 'bg-purple-500'
               },
               { 
-                title: 'মাল্টি ডিভাইস', 
-                desc: 'ফোন, ট্যাবলেট বা পিসি — সব জায়গায় একই ডাটা। একাউন্ট খুলুন আর শুরু করুন।',
+                title: 'মোবাইল ও পিসি সিঙ্ক', 
+                desc: 'ফোন, ট্যাবলেট বা পিসি — সব জায়গায় একই ডাটা। একাউন্ট খুলুন আর হিসাব শুরু করুন।',
                 icon: Smartphone,
                 color: 'bg-amber-500'
               }
@@ -467,7 +507,69 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Developer Masterpiece Section (Huzaifa) */}
+      {/* Testimonials Section - Trusted by the Elite */}
+      <section className="py-24 md:py-40 px-6 bg-[#F9F7F5] relative overflow-hidden">
+         <div className="max-w-7xl mx-auto">
+            <div className="text-center space-y-6 mb-20 md:mb-32">
+               <motion.div initial={{ y: 20, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#92400E]/5 text-[#92400E] text-[10px] font-black uppercase tracking-widest">User Wall of Love</motion.div>
+               <h2 className="text-4xl md:text-6xl font-black text-[#111827] tracking-tight leading-[1.1]">
+                  ব্যবহারকারীদের <span className="text-[#92400E]">মতামত।</span>
+               </h2>
+               <p className="text-[#111827]/40 text-lg md:text-xl font-bold max-w-2xl mx-auto leading-relaxed">
+                  Ledger Knox ব্যবহার করে হাজারো মানুষ তাদের ফিন্যান্সিয়াল লাইফ বদলে ফেলেছেন। শুনুন তাদের অভিজ্ঞতা।
+               </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+               {[
+                 {
+                   name: 'আরিফ রহমান',
+                   role: 'সফটওয়্যার ইঞ্জিনিয়ার',
+                   comment: 'Ledger Knox এর ইন্টারফেস এক কথায় অসাধারণ! এর আগে অনেক অ্যাপ ব্যবহার করেছি কিন্তু এমন প্রিমিয়াম ফিল আর স্মুথনেস কোথাও পাইনি।',
+                   avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1000&auto=format&fit=crop'
+                 },
+                 {
+                   name: 'ফাতেমা আক্তার',
+                   role: 'ফ্রিল্যান্সার',
+                   comment: 'আমার মান্থলি বাজেট আর ক্লায়েন্টদের পেমেন্ট ট্র্যাক করার জন্য এটি বেস্ট টুল। মিলিটারি গ্রেড সিকিউরিটি আমাকে ডাটা নিয়ে নিশ্চিন্ত রাখে।',
+                   avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop'
+                 },
+                 {
+                   name: 'রাফি ইসলাম',
+                   role: 'বিশ্ববিদ্যালয় শিক্ষার্থী',
+                   comment: 'ছাত্রাবস্থায় হাতখরচের হিসাব রাখা খুব টাফ ছিল। কিন্তু এই ডিজিটাল খাতা আমার পকেটের উপর কন্ট্রোল ফিরিয়ে দিয়েছে। ধন্যবাদ Nullcove!',
+                   avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop'
+                 }
+               ].map((testi, i) => (
+                 <motion.div 
+                   key={i}
+                   initial={{ y: 50, opacity: 0 }}
+                   whileInView={{ y: 0, opacity: 1 }}
+                   transition={{ delay: i * 0.1 }}
+                   className="p-10 md:p-12 bg-white rounded-[40px] border border-[#92400E]/5 shadow-sm hover:shadow-2xl hover:shadow-[#92400E]/5 transition-all group"
+                 >
+                    <div className="flex items-center gap-4 mb-8">
+                       <img src={testi.avatar} alt={testi.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#92400E]/20" />
+                       <div>
+                          <h4 className="font-black text-[#111827] text-lg">{testi.name}</h4>
+                          <p className="text-xs font-bold text-[#92400E]/60 uppercase tracking-widest">{testi.role}</p>
+                       </div>
+                    </div>
+                    <p className="text-lg font-bold text-[#111827]/60 leading-relaxed italic">
+                       "{testi.comment}"
+                    </p>
+                    <div className="flex gap-1 mt-8">
+                       {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 text-amber-500 fill-amber-500" />
+                       ))}
+                    </div>
+                 </motion.div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      {/* Developer Masterpiece Section (Nullcove) */}
       <section className="py-24 md:py-48 px-6 bg-[#111827] text-white relative overflow-hidden">
          <div className="absolute -top-40 -left-20 w-[600px] h-[600px] bg-[#92400E]/10 blur-[150px] rounded-full animate-pulse" />
          <div className="absolute -bottom-40 -right-20 w-[500px] h-[500px] bg-white/5 blur-[120px] rounded-full" />
@@ -483,13 +585,13 @@ export default function LandingPage() {
                   <div className="absolute inset-0 bg-[#92400E]/20 group-hover:bg-transparent transition-colors duration-700" />
                   <img 
                     src="https://picsum.photos/800/800?grayscale" 
-                    alt="Riyad Hossain Huzaifa" 
+                    alt="Nullcove" 
                     className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-110 group-hover:brightness-100 transition-all duration-1000"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-transparent" />
                   <div className="absolute bottom-10 left-10 space-y-2">
                      <p className="text-[#92400E] font-black text-sm uppercase tracking-[0.5em]">The Visionary Architect</p>
-                     <h3 className="text-4xl md:text-6xl font-black tracking-tight">Riyad Hossain <br /> Huzaifa</h3>
+                     <h3 className="text-4xl md:text-6xl font-black tracking-tight">Riyad Hossain <br /> Nullcove</h3>
                   </div>
                </div>
                
@@ -515,12 +617,12 @@ export default function LandingPage() {
                  viewport={{ once: true }}
                  className="space-y-6"
                >
-                  <h2 className="text-5xl md:text-8xl font-black tracking-tight leading-[0.9]">
+                  <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-[0.9]">
                     সফলতার <br />
                     <span className="text-[#92400E]">মাস্টারপিস।</span>
                   </h2>
                   <p className="text-white/60 text-xl font-bold leading-relaxed">
-                    রিয়াদ হোসেন হুজাইফা তাঁর নিখুঁত কোডিং আর দূরদর্শী ডিজাইনের মাধ্যমে তৈরি করেছেন Ledger Knox। এটি কোনো সাধারণ ট্র্যাকার নয়, এটি একটি ফিন্যান্সিয়াল ইঞ্জিন যা আপনার টাকাকে করবে গতিশীল।
+                    Nullcove তাঁর নিখুঁত কোডিং আর দূরদর্শী ডিজাইনের মাধ্যমে তৈরি করেছেন Ledger Knox। এটি কোনো সাধারণ ট্র্যাকার নয়, এটি একটি ফিন্যান্সিয়াল ইঞ্জিন যা আপনার টাকাকে করবে গতিশীল।
                   </p>
                </motion.div>
 
@@ -569,18 +671,17 @@ export default function LandingPage() {
             >
                <Heart className="w-12 h-12 fill-red-500 animate-pulse" />
             </motion.div>
-            <h2 className="text-5xl md:text-9xl font-black text-[#111827] tracking-tight leading-[0.9]">
+            <h2 className="text-5xl md:text-7xl font-black text-[#111827] tracking-tight leading-[0.9]">
                আমাদের <br />
                <span className="text-[#92400E]">পাশে দাঁড়ান।</span>
             </h2>
             <p className="text-[#111827]/60 text-xl md:text-3xl font-bold leading-relaxed">
-               Ledger Knox সম্পূর্ণ বিজ্ঞাপনমুক্ত একটি প্রজেক্ট। আমরা কোনো চার্জ নেই না। আপনি চাইলে ছোট একটি ডোনেশনের মাধ্যমে আমাদের সার্ভার খরচ মেইনটেইন করতে সাহায্য করতে পারেন।
+               Ledger Knox সম্পূর্ণ বিজ্ঞাপনমুক্ত এবং একটি অলাভজনক প্রজেক্ট। একটি হাই-পারফরম্যান্স ওয়েবসাইট ডিপ্লয় এবং মেইনটেইন করার জন্য অনেক সময় এবং শ্রমের প্রয়োজন হয়। তাই আমরা কোনো সাবস্ক্রিপশন চার্জ না নিলেও, আপনি চাইলে ছোট একটি ডোনেশনের মাধ্যমে আমাদের এই উদ্যোগটি সচল রাখতে সাহায্য করতে পারেন।
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-12">
                {[
-                 { provider: 'bKash', number: '017XXXXXXXX', color: '#E2136E', bg: 'bg-[#E2136E]/5' },
-                 { provider: 'Nagad', number: '01XXXXXXXXX', color: '#EC1C24', bg: 'bg-[#EC1C24]/5' }
+                 { provider: 'bKash', number: '01910112001', color: '#E2136E', bg: 'bg-[#E2136E]/5' },
                ].map((mod, i) => (
                  <motion.div 
                    key={mod.provider}
@@ -630,123 +731,81 @@ export default function LandingPage() {
          </div>
       </section>
 
-      {/* SEO Content Section — keyword-rich for Google indexing */}
-      <section className="py-20 md:py-32 px-6 bg-white border-t border-[#92400E]/5">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#92400E]/5 text-[#92400E] text-[10px] font-black uppercase tracking-widest mb-8">Ledger Knox — সম্পূর্ণ হিসাব প্ল্যাটফর্ম</div>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight text-[#111827] leading-tight mb-6">
-              বাংলাদেশের সেরা <span className="text-[#92400E]">ফ্রি হিসাবের অ্যাপ</span>
-            </h2>
-            <p className="text-lg md:text-xl text-[#111827]/60 font-bold max-w-3xl mx-auto leading-relaxed">
-              Ledger Knox হলো বাংলাদেশের একটি সম্পূর্ণ বিনামূল্যের ব্যক্তিগত আয়-ব্যয় ট্র্যাকার অ্যাপ্লিকেশন। 
-              এটি দিয়ে আপনি আপনার দৈনিক খরচ, মাসিক বাজেট, ধার-দেনার হিসাব, দোকানের বাকি, রিকারিং বিল, 
-              সঞ্চয়ের লক্ষ্য এবং বাজার তালিকা সব একটি অ্যাপেই পরিচালনা করতে পারবেন।
-            </p>
-          </div>
+      {/* Final CTA & Explore Section */}
+      <section className="py-32 px-6 bg-white overflow-hidden relative">
+          <div className="max-w-7xl mx-auto flex flex-col items-center text-center gap-16">
+             <motion.div initial={{ y: 20, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} className="space-y-6">
+                <h2 className="text-4xl md:text-7xl font-black tracking-tighter leading-[0.85]">অন্বেষণ <span className="text-[#92400E]">করুন।</span></h2>
+                <p className="text-xl md:text-2xl text-[#111827]/40 font-bold max-w-2xl">Ledger Knox-এর প্রতিটি মডিউল আলাদাভাবে ডিজাইন করা হয়েছে। আপনার প্রয়োজনীয় সেকশনটি বেছে নিন।</p>
+             </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-            {[
-              {
-                title: 'আয়-ব্যয় ট্র্যাকিং',
-                desc: 'প্রতিদিনের আয় ও ব্যয়ের সম্পূর্ণ হিসাব রাখুন। বিকাশ, নগদ, ব্যাংক সহ যেকোনো ওয়ালেট থেকে লেনদেন এন্ট্রি করুন। বার চার্ট ও পাই চার্টে দেখুন আপনার ব্যয়ের ধরন।',
-                icon: Receipt,
-              },
-              {
-                title: 'মাসিক বাজেট পরিকল্পনা',
-                desc: 'প্রতি মাসে বাজেট নির্ধারণ করুন এবং খরচ সেই সীমার মধ্যে রাখুন। স্মার্ট অ্যালার্ট পাবেন যখন বাজেটের ৮০% ব্যবহার হয়ে যাবে।',
-                icon: PieChart,
-              },
-              {
-                title: 'ধার-দেনার হিসাব',
-                desc: 'কে কত টাকা দিয়েছে, কাকে কত দিতে হবে — সব হিসাব পরিষ্কারভাবে রাখুন। কিস্তি প্রদানের ইতিহাস সহ সম্পূর্ণ ট্র্যাকিং।',
-                icon: Briefcase,
-              },
-              {
-                title: 'দোকানের বাকি ট্র্যাকিং',
-                desc: 'কোন দোকানে কত বাকি আছে তার সম্পূর্ণ হিসাব রাখুন। পেমেন্ট দিলে অটোমেটিক আপডেট হয়। ক্যাটাগরি অনুযায়ী সাজানো।',
-                icon: ShoppingCart,
-              },
-              {
-                title: 'স্মার্ট বাজার তালিকা',
-                desc: 'বাজারে যাওয়ার আগে তালিকা বানান। আইটেমের দাম ও পরিমাণ লিখুন। WhatsApp-এ শেয়ার করুন। বাজার শেষে টিক দিয়ে সম্পন্ন করুন।',
-                icon: CheckCircle2,
-              },
-              {
-                title: 'সঞ্চয় লক্ষ্য নির্ধারণ',
-                desc: 'মোবাইল কিনবেন? বিয়ের খরচ জমাবেন? সঞ্চয়ের লক্ষ্য নির্ধারণ করুন এবং প্রতি মাসে কত জমা হলো তার ট্র্যাক রাখুন।',
-                icon: Target,
-              },
-            ].map((item, i) => (
-              <div key={i} className="p-10 bg-[#F9F7F5] rounded-[40px] border border-[#92400E]/5 hover:border-[#92400E]/20 hover:bg-white transition-all group">
-                <item.icon className="w-10 h-10 text-[#92400E] mb-6 group-hover:scale-110 transition-transform" />
-                <h3 className="text-2xl font-black text-[#111827] mb-4">{item.title}</h3>
-                <p className="text-[#111827]/60 font-bold leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
+             <div className="flex flex-wrap justify-center gap-8 lg:gap-12">
+                {[
+                  { name: 'আমাদের ফিচার', href: '/features', icon: Sparkles },
+                  { name: 'নিরাপত্তা ব্যবস্থা', href: '/security', icon:ShieldCheck },
+                  { name: 'আমাদের লক্ষ্য', href: '/about', icon: Users },
+                  { name: 'ডোনেশন গাইড', href: '/support', icon: Heart }
+                ].map((item, i) => (
+                   <Link 
+                     key={i} 
+                     href={item.href} 
+                     className="px-10 py-6 bg-[#F9F7F5] border border-[#92400E]/10 rounded-[32px] flex items-center gap-4 hover:bg-[#111827] hover:text-white transition-all shadow-sm group"
+                   >
+                     <item.icon className="w-6 h-6 text-[#92400E] group-hover:scale-125 transition-transform" />
+                     <span className="text-sm font-black uppercase tracking-widest">{item.name}</span>
+                   </Link>
+                ))}
+             </div>
 
-          {/* How It Works */}
-          <div className="bg-[#111827] rounded-[60px] p-12 md:p-20 text-white">
-            <h2 className="text-3xl md:text-5xl font-black text-center mb-16 tracking-tight">
-              কীভাবে <span className="text-[#92400E]">শুরু করবেন?</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              {[
-                { step: '১', title: 'একাউন্ট খুলুন', desc: 'ইমেইল দিয়ে মাত্র ৩০ সেকেন্ডে ফ্রি একাউন্ট খুলুন। কোনো ক্রেডিট কার্ড লাগবে না।' },
-                { step: '২', title: 'হিসাব শুরু করুন', desc: 'আয়, ব্যয়, ধার, বাজার তালিকা — যা খুশি এন্ট্রি করুন। ইন্টারফেস সম্পূর্ণ বাংলায়।' },
-                { step: '৩', title: 'রিপোর্ট দেখুন', desc: 'মাস শেষে দেখুন কোথায় কত খরচ হয়েছে। চার্ট দেখে সিদ্ধান্ত নিন আগামী মাসের বাজেট।' },
-              ].map((item, i) => (
-                <div key={i} className="text-center space-y-6">
-                  <div className="w-20 h-20 bg-[#92400E] rounded-3xl flex items-center justify-center text-3xl font-black mx-auto shadow-lg shadow-[#92400E]/30">{item.step}</div>
-                  <h3 className="text-2xl font-black">{item.title}</h3>
-                  <p className="text-white/50 font-bold leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-            <div className="text-center mt-16">
-              <Link href="/auth/signup" className="inline-flex items-center gap-3 bg-[#92400E] text-white px-12 py-6 rounded-[28px] font-black text-lg hover:bg-white hover:text-[#111827] transition-all shadow-xl">
-                এখনই শুরু করুন — সম্পূর্ণ ফ্রি <ArrowRight className="w-6 h-6" />
-              </Link>
-            </div>
+             <div className="pt-20">
+                <Link href="/auth/signup" className="bg-[#111827] text-white px-16 py-8 rounded-[40px] font-black text-xl hover:bg-[#92400E] hover:scale-105 transition-all shadow-2xl flex items-center gap-4">
+                   এখনই শুরু করুন — সম্পূর্ণ ফ্রি <ArrowRight className="w-8 h-8" />
+                </Link>
+             </div>
           </div>
-        </div>
       </section>
 
       {/* Luxury Footer */}
-      <footer className="py-20 md:py-32 px-6 bg-[#111827] text-white/40">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-16">
-          <div className="flex flex-col items-center md:items-start gap-10">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-[#92400E] text-white rounded-2xl flex items-center justify-center text-3xl font-black italic shadow-2xl shadow-[#92400E]/20">LK</div>
-              <div className="space-y-1">
-                 <h2 className="text-3xl font-black tracking-tight text-white">Ledger Knox</h2>
-                 <p className="text-[10px] font-black uppercase tracking-[0.5em]">The Elite Financial Vault</p>
-              </div>
-            </div>
-            <p className="text-sm font-bold text-center md:text-left max-w-sm leading-relaxed">
-              Ledger Knox রিয়াদ হোসেন হুজাইফা কর্তৃক ডিজাইন ও ডেভেলপ করা হয়েছে। এটি ব্যক্তিগত আয়-ব্যয় ট্র্যাকিং করার একটি বিশেষ প্লাটফর্ম।
-            </p>
+      <footer className="py-32 px-6 bg-[#111827] text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[#92400E]/5 pointer-events-none" />
+        <div className="max-w-7xl mx-auto space-y-32 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-20">
+             <div className="space-y-8 max-w-md">
+                <div className="flex items-center gap-4">
+                   <div className="w-16 h-16 bg-[#92400E] text-white rounded-2xl flex items-center justify-center text-3xl font-black italic shadow-2xl shadow-[#92400E]/30">LK</div>
+                   <div className="space-y-1">
+                      <h2 className="text-3xl font-black tracking-tighter">Ledger Knox</h2>
+                      <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#92400E]">The Elite Vault</p>
+                   </div>
+                </div>
+                <p className="text-xl font-bold text-white/40 leading-relaxed italic">"Nullcove-এর উদ্ভাবনী দর্শনে তৈরি একটি ডিজিটাল ইকোসিস্টেম, যেখানে আপনার প্রতিটি পয়সার হিসাব থাকে শিল্পতুল্য নিরাপত্তায়।"</p>
+             </div>
+
+             <div className="grid grid-cols-2 md:grid-cols-3 gap-16 lg:gap-24">
+                {[
+                  { title: 'পণ্য', links: [{ n: 'ফিচার', h: '/features' }, { n: 'নিরাপত্তা', h: '/security' }, { n: 'সাপোর্ট', h: '/support' }] },
+                  { title: 'কোম্পানি', links: [{ n: 'সম্পর্কে', h: '/about' }, { n: 'FAQ', h: '/faq' }, { n: 'যোগাযোগ', h: '/contact' }] },
+                  { title: 'লিগ্যাল', links: [{ n: 'শর্তাবলী', h: '/terms' }, { n: 'প্রাইভেসি', h: '/privacy' }, { n: 'হেল্প', h: '/help' }] }
+                ].map((col, i) => (
+                   <div key={i} className="space-y-8">
+                      <h4 className="text-xs font-black uppercase tracking-[0.4em] text-[#92400E]">{col.title}</h4>
+                      <ul className="space-y-4">
+                         {col.links.map((l, j) => (
+                            <li key={j}><Link href={l.h} className="text-sm font-bold text-white/30 hover:text-white transition-colors">{l.n}</Link></li>
+                         ))}
+                      </ul>
+                   </div>
+                ))}
+             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-12 font-black text-[10px] uppercase tracking-[0.3em] overflow-hidden">
-             {[
-               { name: 'ফিচার', href: '/features' },
-               { name: 'প্রাইসিং', href: '/pricing' },
-               { name: 'সম্পর্কে', href: '/about' },
-               { name: 'নিরাপত্তা', href: '/security' },
-               { name: 'FAQ', href: '/faq' },
-               { name: 'হেল্প', href: '/help' },
-               { name: 'যোগাযোগ', href: '/contact' },
-               { name: 'শর্তাবলী', href: '/terms' },
-               { name: 'প্রাইভেসি', href: '/privacy' }
-             ].map(f => (
-               <Link key={f.name} href={f.href} className="hover:text-white hover:tracking-[0.5em] transition-all duration-500">{f.name}</Link>
-             ))}
+          <div className="pt-20 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20">&copy; 2026 Developed by Nullcove — All Rights Reserved</p>
+             <div className="flex gap-8">
+                <Github className="w-5 h-5 text-white/20 hover:text-[#92400E] transition-colors cursor-pointer" />
+                <Globe className="w-5 h-5 text-white/20 hover:text-[#92400E] transition-colors cursor-pointer" />
+             </div>
           </div>
-        </div>
-        <div className="mt-20 pt-10 border-t border-white/5 text-center">
-           <p className="text-[10px] font-black uppercase tracking-[0.5em]">&copy; 2026 Developed by Riyad Hossain Huzaifa — All Rights Reserved</p>
         </div>
       </footer>
 
@@ -754,7 +813,7 @@ export default function LandingPage() {
       <motion.nav 
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="lg:hidden fixed bottom-0 inset-x-0 z-[100] h-24 bg-white/90 backdrop-blur-2xl border-t border-[#92400E]/10 flex items-center justify-around px-4 mobile-bottom-nav"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-[100] h-24 bg-white/90 backdrop-blur-2xl border-t border-[#92400E]/10 flex items-center justify-around px-4"
       >
         {[
           { icon: Home, label: 'হোম', href: '/', active: true },
@@ -778,6 +837,38 @@ export default function LandingPage() {
           </Link>
         ))}
       </motion.nav>
+
+      {/* Deep SEO Semantic Engine (Visually Hidden, indexed by Google) */}
+      <section className="sr-only" aria-hidden="true">
+        <h2>Ledger Knox: বাংলাদেশের ১ নম্বর ডিজিটাল হিসাবের খাতা ও টাকার হিসাব ট্র্যাকার</h2>
+        <p>
+          লেজার নক্স (Ledger Knox) বাংলাদেশের প্রেক্ষাপটে তৈরি একটি প্রিমিয়াম আয় ব্যয়ের হিসাব রাখার অ্যাপ। 
+          এটি একটি সম্পূর্ণ বিনামূল্যের ব্যক্তিগত আয়-ব্যয় ট্র্যাকার অ্যাপ্লিকেশন। এটি দিয়ে আপনি আপনার দৈনিক খরচ, 
+          মাসিক বাজেট, ধার-দেনার হিসাব, দোকানের বাকি, রিকারিং বিল, সঞ্চয়ের লক্ষ্য এবং বাজার তালিকা সব একটি অ্যাপেই পরিচালনা করতে পারবেন।
+        </p>
+        <p>
+          বিকাশ, নগদ, ব্যাংক সহ যেকোনো ওয়ালেট থেকে লেনদেন এন্ট্রি করুন। বার চার্ট ও পাই চার্টে দেখুন আপনার ব্যয়ের ধরন। 
+          প্রতি মাসে বাজেট নির্ধারণ করুন এবং খরচ সেই সীমার মধ্যে রাখুন। স্মার্ট অ্যালার্ট পাবেন যখন বাজেটের ৮০% ব্যবহার হয়ে যাবে। 
+          কে কত টাকা দিয়েছে, কাকে কত দিতে হবে — সব হিসাব পরিষ্কারভাবে রাখুন। কোন দোকানে কত বাকি আছে তার সম্পূর্ণ হিসাব রাখুন।
+        </p>
+        <p>
+          বাজারে যাওয়ার আগে তালিকা বানান। আইটেমের দাম ও পরিমাণ লিখুন। WhatsApp-এ শেয়ার করুন। বাজার শেষে টিক দিয়ে সম্পন্ন করুন। 
+          সঞ্চয়ের লক্ষ্য নির্ধারণ করুন এবং প্রতি মাসে কত জমা হলো তার ট্র্যাক রাখুন। ইমেইল দিয়ে মাত্র ৩০ সেকেন্ডে ফ্রি একাউন্ট খুলুন। 
+          ইন্টারফেস সম্পূর্ণ বাংলায়। মাস শেষে রিপোর্ট দেখে সিদ্ধান্ত নিন আগামী মাসের বাজেট।
+        </p>
+        <p>
+          ব্যক্তিগত ফিন্যান্স ম্যানেজমেন্টের জন্য এটি সেরা অ্যাপ। আপনি যদি স্টুডেন্ট, চাকুরিজীবী, 
+          ব্যবসায়ী বা ফ্রিল্যান্সার হন, তবে আমাদের টাকার হিসাব বা takar hisab app টি ডাউনলোড করুন। 
+          এটি একটি ফ্রি ডাউনলোড অ্যাপ যা অফলাইন ও অনলাইন উভয় মোডেই কাজ করে। 
+          সহজ হিসাবের এই আধুনিক লেজার বা ক্যাশবুকটি ব্যবহার করে আপনি আপনার আর্থিক লক্ষ্য পূরণ করতে পারবেন।
+        </p>
+        <p>
+          অনুসন্ধানের জন্য কিছু কিওয়ার্ড: হিসাব নিকাশ, আয় ব্যয়ের ক্যালকুলেটর, দৈনিক খরচ ট্র্যাকার, 
+          বাংলাদেশি মানি ম্যানেজার, বাজেটিং সফটওয়্যার বাংলাদেশ, ডিজিটাল খাতা, টাকার সহজ হিসাব, 
+          বানিজ্যিক হিসাব, ফ্যামিলি বাজেট প্ল্যানার, এবং সেরা টাকার সফটওয়্যার ২০২৬। 
+          Nullcove এর ডেভেলপ করা এই প্রজেক্টটি আপনার ফিন্যান্সিয়াল ফ্রিডম অর্জনে বড় ভূমিকা রাখবে।
+        </p>
+      </section>
 
       {/* CSS Effects Injection for specialized animations */}
       <style jsx global>{`

@@ -261,7 +261,7 @@ export default function LoginPage() {
             <span className="text-[#B45309] font-black">R</span>
           </motion.div>
           <div>
-            <p className="text-white font-black text-sm">Riyad Hossain Huzaifa</p>
+            <p className="text-white font-black text-sm">Nullcove</p>
             <p className="text-white/30 text-xs font-bold uppercase tracking-widest">Architect & Visionary</p>
           </div>
           {/* Effect 9: orbiting star */}
