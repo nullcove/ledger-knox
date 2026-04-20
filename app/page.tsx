@@ -9,8 +9,10 @@ import {
   Wallet, PieChart, Star, Github, Menu, X, ArrowDown, Users, Lock, Globe,
   ShieldCheck, Heart, Sparkles, Play, MousePointer2, UserPlus, Receipt,
   CheckCircle2, CreditCard, Target, Smartphone, Globe2, LayoutDashboard,
-  MessageSquare, FileText, Info, Download, Home, Settings, Bell
+  MessageSquare, FileText, Info, Download, Home, Settings, Bell,
+  ShoppingCart, Briefcase
 } from 'lucide-react';
+
 import CustomCursor from '@/components/CustomCursor';
 import { insforge } from '@/lib/insforge';
 
@@ -623,6 +625,89 @@ export default function LandingPage() {
                ))}
             </div>
          </div>
+      </section>
+
+      {/* SEO Content Section — keyword-rich for Google indexing */}
+      <section className="py-20 md:py-32 px-6 bg-white border-t border-[#92400E]/5">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#92400E]/5 text-[#92400E] text-[10px] font-black uppercase tracking-widest mb-8">Ledger Knox — সম্পূর্ণ হিসাব প্ল্যাটফর্ম</div>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight text-[#111827] leading-tight mb-6">
+              বাংলাদেশের সেরা <span className="text-[#92400E]">ফ্রি হিসাবের অ্যাপ</span>
+            </h2>
+            <p className="text-lg md:text-xl text-[#111827]/60 font-bold max-w-3xl mx-auto leading-relaxed">
+              Ledger Knox হলো বাংলাদেশের একটি সম্পূর্ণ বিনামূল্যের ব্যক্তিগত আয়-ব্যয় ট্র্যাকার অ্যাপ্লিকেশন। 
+              এটি দিয়ে আপনি আপনার দৈনিক খরচ, মাসিক বাজেট, ধার-দেনার হিসাব, দোকানের বাকি, রিকারিং বিল, 
+              সঞ্চয়ের লক্ষ্য এবং বাজার তালিকা সব একটি অ্যাপেই পরিচালনা করতে পারবেন।
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+            {[
+              {
+                title: 'আয়-ব্যয় ট্র্যাকিং',
+                desc: 'প্রতিদিনের আয় ও ব্যয়ের সম্পূর্ণ হিসাব রাখুন। বিকাশ, নগদ, ব্যাংক সহ যেকোনো ওয়ালেট থেকে লেনদেন এন্ট্রি করুন। বার চার্ট ও পাই চার্টে দেখুন আপনার ব্যয়ের ধরন।',
+                icon: Receipt,
+              },
+              {
+                title: 'মাসিক বাজেট পরিকল্পনা',
+                desc: 'প্রতি মাসে বাজেট নির্ধারণ করুন এবং খরচ সেই সীমার মধ্যে রাখুন। স্মার্ট অ্যালার্ট পাবেন যখন বাজেটের ৮০% ব্যবহার হয়ে যাবে।',
+                icon: PieChart,
+              },
+              {
+                title: 'ধার-দেনার হিসাব',
+                desc: 'কে কত টাকা দিয়েছে, কাকে কত দিতে হবে — সব হিসাব পরিষ্কারভাবে রাখুন। কিস্তি প্রদানের ইতিহাস সহ সম্পূর্ণ ট্র্যাকিং।',
+                icon: Briefcase,
+              },
+              {
+                title: 'দোকানের বাকি ট্র্যাকিং',
+                desc: 'কোন দোকানে কত বাকি আছে তার সম্পূর্ণ হিসাব রাখুন। পেমেন্ট দিলে অটোমেটিক আপডেট হয়। ক্যাটাগরি অনুযায়ী সাজানো।',
+                icon: ShoppingCart,
+              },
+              {
+                title: 'স্মার্ট বাজার তালিকা',
+                desc: 'বাজারে যাওয়ার আগে তালিকা বানান। আইটেমের দাম ও পরিমাণ লিখুন। WhatsApp-এ শেয়ার করুন। বাজার শেষে টিক দিয়ে সম্পন্ন করুন।',
+                icon: CheckCircle2,
+              },
+              {
+                title: 'সঞ্চয় লক্ষ্য নির্ধারণ',
+                desc: 'মোবাইল কিনবেন? বিয়ের খরচ জমাবেন? সঞ্চয়ের লক্ষ্য নির্ধারণ করুন এবং প্রতি মাসে কত জমা হলো তার ট্র্যাক রাখুন।',
+                icon: Target,
+              },
+            ].map((item, i) => (
+              <div key={i} className="p-10 bg-[#F9F7F5] rounded-[40px] border border-[#92400E]/5 hover:border-[#92400E]/20 hover:bg-white transition-all group">
+                <item.icon className="w-10 h-10 text-[#92400E] mb-6 group-hover:scale-110 transition-transform" />
+                <h3 className="text-2xl font-black text-[#111827] mb-4">{item.title}</h3>
+                <p className="text-[#111827]/60 font-bold leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* How It Works */}
+          <div className="bg-[#111827] rounded-[60px] p-12 md:p-20 text-white">
+            <h2 className="text-3xl md:text-5xl font-black text-center mb-16 tracking-tight">
+              কীভাবে <span className="text-[#92400E]">শুরু করবেন?</span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              {[
+                { step: '১', title: 'একাউন্ট খুলুন', desc: 'ইমেইল দিয়ে মাত্র ৩০ সেকেন্ডে ফ্রি একাউন্ট খুলুন। কোনো ক্রেডিট কার্ড লাগবে না।' },
+                { step: '২', title: 'হিসাব শুরু করুন', desc: 'আয়, ব্যয়, ধার, বাজার তালিকা — যা খুশি এন্ট্রি করুন। ইন্টারফেস সম্পূর্ণ বাংলায়।' },
+                { step: '৩', title: 'রিপোর্ট দেখুন', desc: 'মাস শেষে দেখুন কোথায় কত খরচ হয়েছে। চার্ট দেখে সিদ্ধান্ত নিন আগামী মাসের বাজেট।' },
+              ].map((item, i) => (
+                <div key={i} className="text-center space-y-6">
+                  <div className="w-20 h-20 bg-[#92400E] rounded-3xl flex items-center justify-center text-3xl font-black mx-auto shadow-lg shadow-[#92400E]/30">{item.step}</div>
+                  <h3 className="text-2xl font-black">{item.title}</h3>
+                  <p className="text-white/50 font-bold leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-16">
+              <Link href="/auth/signup" className="inline-flex items-center gap-3 bg-[#92400E] text-white px-12 py-6 rounded-[28px] font-black text-lg hover:bg-white hover:text-[#111827] transition-all shadow-xl">
+                এখনই শুরু করুন — সম্পূর্ণ ফ্রি <ArrowRight className="w-6 h-6" />
+              </Link>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Luxury Footer */}

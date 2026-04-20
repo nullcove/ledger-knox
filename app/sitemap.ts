@@ -2,67 +2,71 @@ import type { MetadataRoute } from 'next';
 
 const BASE_URL = 'https://ledgerknox.nullcove.com';
 
+// Build date — update this when major content changes happen
+const SITE_BUILD_DATE = new Date('2026-04-20T00:00:00Z');
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: BASE_URL,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
+      lastModified: SITE_BUILD_DATE,
+      changeFrequency: 'weekly',
       priority: 1.0,
     },
     {
       url: `${BASE_URL}/features`,
-      lastModified: new Date(),
+      lastModified: SITE_BUILD_DATE,
       changeFrequency: 'monthly',
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/pricing`,
-      lastModified: new Date(),
+      lastModified: SITE_BUILD_DATE,
       changeFrequency: 'monthly',
-      priority: 0.8,
+      priority: 0.85,
     },
     {
       url: `${BASE_URL}/about`,
-      lastModified: new Date(),
+      lastModified: SITE_BUILD_DATE,
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/faq`,
-      lastModified: new Date(),
+      url: `${BASE_URL}/help`,
+      lastModified: SITE_BUILD_DATE,
       changeFrequency: 'monthly',
-      priority: 0.7,
+      priority: 0.75,
     },
     {
-      url: `${BASE_URL}/help`,
-      lastModified: new Date(),
+      url: `${BASE_URL}/faq`,
+      lastModified: SITE_BUILD_DATE,
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
       url: `${BASE_URL}/contact`,
-      lastModified: new Date(),
+      lastModified: SITE_BUILD_DATE,
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.65,
     },
     {
       url: `${BASE_URL}/security`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
+      lastModified: SITE_BUILD_DATE,
+      changeFrequency: 'yearly',
+      priority: 0.55,
     },
     {
       url: `${BASE_URL}/privacy`,
-      lastModified: new Date(),
+      lastModified: SITE_BUILD_DATE,
       changeFrequency: 'yearly',
       priority: 0.4,
     },
     {
       url: `${BASE_URL}/terms`,
-      lastModified: new Date(),
+      lastModified: SITE_BUILD_DATE,
       changeFrequency: 'yearly',
       priority: 0.4,
     },
   ];
 }
+

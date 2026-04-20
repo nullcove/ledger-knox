@@ -25,7 +25,12 @@ export const metadata: Metadata = {
     template: '%s | Ledger Knox',
   },
   description: 'Ledger Knox একটি প্রিমিয়াম বাংলা ফিন্যান্সিয়াল ট্র্যাকার। রিয়েল-টাইম ডাটা, স্মার্ট বাজেট বিশ্লেষণ, ধার-দেনা ট্র্যাকিং এবং বাজার তালিকা — সম্পূর্ণ ফ্রি।',
-  keywords: ['হিসাব', 'ফিন্যান্স', 'বাজেট', 'টাকা ট্র্যাকার', 'ledger knox', 'বাজার তালিকা', 'ধার দেনা', 'expense tracker', 'bangla finance app'],
+  keywords: [
+    'হিসাব', 'ফিন্যান্স', 'বাজেট', 'টাকা ট্র্যাকার', 'ledger knox', 'বাজার তালিকা',
+    'ধার দেনা', 'expense tracker', 'bangla finance app', 'আয় ব্যয় হিসাব',
+    'ব্যক্তিগত অর্থ', 'বাংলা অ্যাপ', 'financial tracker bangladesh', 'টাকা ম্যানেজ',
+    'সঞ্চয়', 'বাজেট ম্যানেজমেন্ট', 'দোকান বাকি', 'রিকারিং বিল', 'income expense',
+  ],
   authors: [{ name: 'Riyad Hossain Huzaifa', url: 'https://ledgerknox.nullcove.com' }],
   creator: 'Riyad Hossain Huzaifa',
   publisher: 'Ledger Knox',
@@ -42,7 +47,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: '/',
+    canonical: 'https://ledgerknox.nullcove.com',
   },
   openGraph: {
     title: 'Ledger Knox — স্মার্ট হিসাব, লাক্সারি ডিজাইন',
@@ -121,6 +126,46 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${hindSiliguri.className} antialiased`}
         suppressHydrationWarning
       >
+        {/* Global JSON-LD — Server-Side for all pages */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                '@context': 'https://schema.org',
+                '@type': 'Organization',
+                name: 'Ledger Knox',
+                url: 'https://ledgerknox.nullcove.com',
+                logo: 'https://ledgerknox.nullcove.com/icons/icon-512x512.png',
+                description: 'বাংলাদেশের প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার — সম্পূর্ণ ফ্রি।',
+                founder: {
+                  '@type': 'Person',
+                  name: 'Riyad Hossain Huzaifa',
+                },
+                contactPoint: {
+                  '@type': 'ContactPoint',
+                  contactType: 'customer support',
+                  url: 'https://ledgerknox.nullcove.com/contact',
+                  availableLanguage: ['Bengali', 'English'],
+                },
+                sameAs: ['https://ledgerknox.nullcove.com'],
+              },
+              {
+                '@context': 'https://schema.org',
+                '@type': 'WebSite',
+                name: 'Ledger Knox',
+                url: 'https://ledgerknox.nullcove.com',
+                description: 'বাংলাদেশের সেরা প্রিমিয়াম ফিন্যান্সিয়াল ট্র্যাকার — সম্পূর্ণ ফ্রি।',
+                inLanguage: 'bn',
+                potentialAction: {
+                  '@type': 'SearchAction',
+                  target: 'https://ledgerknox.nullcove.com/help?q={search_term_string}',
+                  'query-input': 'required name=search_term_string',
+                },
+              },
+            ]),
+          }}
+        />
         {children}
       </body>
     </html>

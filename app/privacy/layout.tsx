@@ -10,9 +10,17 @@ export const metadata: Metadata = {
     title: 'গোপনীয়তা নীতি | Ledger Knox',
     description: 'Ledger Knox আপনার প্রাইভেসি রক্ষায় প্রতিশ্রুতিবদ্ধ।',
     url: 'https://ledgerknox.nullcove.com/privacy',
+    images: [{ url: 'https://ledgerknox.nullcove.com/opengraph-image', width: 1200, height: 630, alt: 'Ledger Knox Privacy Policy' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'গোপনীয়তা নীতি | Ledger Knox',
+    description: 'Ledger Knox আপনার প্রাইভেসি রক্ষায় প্রতিশ্রুতিবদ্ধ।',
+    images: ['https://ledgerknox.nullcove.com/opengraph-image'],
   },
 };
 
 export default function PrivacyLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
+

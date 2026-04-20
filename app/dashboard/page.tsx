@@ -30,7 +30,48 @@ interface Transaction {
   id: string; type: TransactionType; amount: number;
   category: string; note: string; date: string; walletId?: WalletType;
 }
-interface Todo { id: string; text: string; isCompleted: boolean; category: string; quantity: string; priority: 'low'|'normal'|'high'; estimated_price: number; }
+interface Todo { id: string; text: string; isCompleted: boolean; category: string; quantity: string; unit: string; priority: 'low'|'normal'|'high'; estimated_price: number; actual_price: number; actual_qty: string; purchased_at: string; }
+
+// Smart item suggestions with default units
+const SMART_ITEMS: { name: string; unit: string; category: string; emoji: string }[] = [
+  { name: 'চাল', unit: 'কেজি', category: 'শুকনো পণ্য', emoji: '🌾' },
+  { name: 'আটা', unit: 'কেজি', category: 'শুকনো পণ্য', emoji: '🌾' },
+  { name: 'ডাল', unit: 'কেজি', category: 'শুকনো পণ্য', emoji: '🌿' },
+  { name: 'আলু', unit: 'কেজি', category: 'শাকসবজি', emoji: '🥔' },
+  { name: 'পেঁয়াজ', unit: 'কেজি', category: 'মশলা', emoji: '🧅' },
+  { name: 'রসুন', unit: 'গ্রাম', category: 'মশলা', emoji: '🧄' },
+  { name: 'আদা', unit: 'গ্রাম', category: 'মশলা', emoji: '🫚' },
+  { name: 'মরিচ', unit: 'গ্রাম', category: 'মশলা', emoji: '🌶️' },
+  { name: 'হলুদ', unit: 'গ্রাম', category: 'মশলা', emoji: '🟡' },
+  { name: 'তেল', unit: 'লিটার', category: 'শুকনো পণ্য', emoji: '🫙' },
+  { name: 'লবণ', unit: 'গ্রাম', category: 'শুকনো পণ্য', emoji: '🧂' },
+  { name: 'চিনি', unit: 'কেজি', category: 'শুকনো পণ্য', emoji: '🍬' },
+  { name: 'ডিম', unit: 'পিস', category: 'দুগ্ধজাত', emoji: '🥚' },
+  { name: 'দুধ', unit: 'লিটার', category: 'দুগ্ধজাত', emoji: '🥛' },
+  { name: 'মাখন', unit: 'গ্রাম', category: 'দুগ্ধজাত', emoji: '🧈' },
+  { name: 'মুরগি', unit: 'কেজি', category: 'মাছ/মাংস', emoji: '🍗' },
+  { name: 'গরুর মাংস', unit: 'কেজি', category: 'মাছ/মাংস', emoji: '🥩' },
+  { name: 'ইলিশ মাছ', unit: 'কেজি', category: 'মাছ/মাংস', emoji: '🐟' },
+  { name: 'রুই মাছ', unit: 'কেজি', category: 'মাছ/মাংস', emoji: '🐠' },
+  { name: 'চিংড়ি', unit: 'কেজি', category: 'মাছ/মাংস', emoji: '🦐' },
+  { name: 'টমেটো', unit: 'কেজি', category: 'শাকসবজি', emoji: '🍅' },
+  { name: 'বেগুন', unit: 'কেজি', category: 'শাকসবজি', emoji: '🍆' },
+  { name: 'পটোল', unit: 'কেজি', category: 'শাকসবজি', emoji: '🥒' },
+  { name: 'করলা', unit: 'কেজি', category: 'শাকসবজি', emoji: '🥬' },
+  { name: 'লাউ', unit: 'পিস', category: 'শাকসবজি', emoji: '🥬' },
+  { name: 'পালং শাক', unit: 'আঁটি', category: 'শাকসবজি', emoji: '🥬' },
+  { name: 'কলা', unit: 'হালি', category: 'ফলমূল', emoji: '🍌' },
+  { name: 'আম', unit: 'কেজি', category: 'ফলমূল', emoji: '🥭' },
+  { name: 'আপেল', unit: 'কেজি', category: 'ফলমূল', emoji: '🍎' },
+  { name: 'সাবান', unit: 'পিস', category: 'অন্যান্য', emoji: '🧼' },
+  { name: 'শ্যাম্পু', unit: 'পিস', category: 'অন্যান্য', emoji: '🧴' },
+  { name: 'টুথপেস্ট', unit: 'পিস', category: 'অন্যান্য', emoji: '🪥' },
+  { name: 'মসুর ডাল', unit: 'কেজি', category: 'শুকনো পণ্য', emoji: '🫘' },
+  { name: 'ছোলা', unit: 'কেজি', category: 'শুকনো পণ্য', emoji: '🫘' },
+  { name: 'সরিষার তেল', unit: 'লিটার', category: 'শুকনো পণ্য', emoji: '🫙' },
+];
+
+const COMMON_UNITS = ['কেজি', 'গ্রাম', '৫০০গ্রাম', 'লিটার', 'পিস', 'হালি', 'ডজন', 'আঁটি', 'প্যাকেট', 'বোতল', 'কৌটা'];
 interface WalletObj { id: WalletType; name: string; balance: number; icon: any; color: string; }
 interface Goal { id: string; name: string; target: number; saved: number; payments?: { id: string; amount: number; date: string; note: string; }[]; }
 interface DebtPayment { id: string; amount: number; date: string; note: string; }
@@ -199,6 +240,12 @@ export default function AppOverview() {
   const [addTaskModal, setAddTaskModal] = useState(false);
   const [bazarCatFilter, setBazarCatFilter] = useState('all');
   const [editTaskModal, setEditTaskModal] = useState<Todo | null>(null);
+  const [purchaseModal, setPurchaseModal] = useState<Todo | null>(null);
+  const [smartSuggestions, setSmartSuggestions] = useState<typeof SMART_ITEMS>([]);
+  const [taskNameInput, setTaskNameInput] = useState('');
+  const [taskUnit, setTaskUnit] = useState('কেজি');
+  const [taskQty, setTaskQty] = useState('');
+  const [showPurchaseHistory, setShowPurchaseHistory] = useState(false);
 
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -270,7 +317,7 @@ export default function AppOverview() {
         });
         setWallets(prev => prev.map(w => ({ ...w, balance: wMap[w.id] ?? 0 })));
       }
-      if (tdRes.data) setTodos(tdRes.data.map((d: any) => ({ id: d.id, text: d.text, isCompleted: d.is_completed, category: d.category || 'অন্যান্য', quantity: d.quantity || '', priority: d.priority || 'normal', estimated_price: Number(d.estimated_price) || 0 })));
+      if (tdRes.data) setTodos(tdRes.data.map((d: any) => ({ id: d.id, text: d.text, isCompleted: d.is_completed, category: d.category || 'অন্যান্য', quantity: d.quantity || '', unit: d.unit || 'কেজি', priority: d.priority || 'normal', estimated_price: Number(d.estimated_price) || 0, actual_price: Number(d.actual_price) || 0, actual_qty: d.actual_qty || '', purchased_at: d.purchased_at || '' })));
       if (goRes.data) {
         const goContributions = gctRes.data || [];
         setGoals(goRes.data.map((d: any) => {
@@ -1376,79 +1423,111 @@ export default function AppOverview() {
           {activeTab === 'tasks' && (() => {
             const filtered = todos.filter(t => !t.isCompleted && (bazarCatFilter === 'all' || t.category === bazarCatFilter));
             const completedTodos = todos.filter(t => t.isCompleted);
-            const totalEstimated = todos.filter(t => !t.isCompleted).reduce((s, t) => s + t.estimated_price, 0);
+            const totalEstimated = todos.filter(t => !t.isCompleted).reduce((s, t) => s + (t.estimated_price || 0), 0);
+            const totalActualSpent = completedTodos.reduce((s, t) => s + (t.actual_price || t.estimated_price || 0), 0);
             const progress = todos.length > 0 ? Math.round((completedTodos.length / todos.length) * 100) : 0;
             return (
-              <div className="space-y-6 animate-mati">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="p-5 bg-[#18181B] dark:bg-zinc-900 rounded-[28px] text-center text-white shadow-xl">
+              <div className="space-y-5 animate-mati">
+                {/* Stats Row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-4 bg-[#18181B] dark:bg-zinc-900 rounded-[24px] text-center text-white shadow-xl">
                     <p className="text-[9px] font-black text-[#B45309] uppercase tracking-widest mb-1">মোট আইটেম</p>
                     <p className="text-3xl font-black">{todos.length}</p>
                   </div>
-                  <div className="p-5 bg-white dark:bg-zinc-950 border border-emerald-200 dark:border-emerald-800/30 rounded-[28px] text-center shadow-sm dark:shadow-none">
+                  <div className="p-4 bg-white dark:bg-zinc-950 border border-emerald-200 dark:border-emerald-800/30 rounded-[24px] text-center shadow-sm">
                     <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">কেনা হয়েছে</p>
                     <p className="text-3xl font-black text-emerald-600">{completedTodos.length}</p>
                   </div>
-                  <div className="p-5 bg-white dark:bg-zinc-950 border border-amber-200 dark:border-amber-800/30 rounded-[28px] text-center shadow-sm dark:shadow-none">
-                    <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-1">বাকি আছে</p>
-                    <p className="text-3xl font-black text-amber-600">{todos.filter(t => !t.isCompleted).length}</p>
-                  </div>
-                  <div className="p-5 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[28px] text-center shadow-sm dark:shadow-none">
-                    <p className="text-[9px] font-black text-[#B45309] uppercase tracking-widest mb-1">আনুমানিক খরচ</p>
+                  <div className="p-4 bg-white dark:bg-zinc-950 border border-amber-200 dark:border-amber-800/30 rounded-[24px] text-center shadow-sm">
+                    <p className="text-[9px] font-black text-[#B45309] uppercase tracking-widest mb-1">আনুমানিক</p>
                     <p className="text-2xl font-black">{currency}{totalEstimated.toLocaleString()}</p>
                   </div>
+                  <div className="p-4 bg-white dark:bg-zinc-950 border border-[#B45309]/20 rounded-[24px] text-center shadow-sm">
+                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">মোট খরচ</p>
+                    <p className="text-2xl font-black text-emerald-600">{currency}{totalActualSpent.toLocaleString()}</p>
+                  </div>
                 </div>
+
+                {/* Progress Bar */}
                 {todos.length > 0 && (
-                  <div className="p-4 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-[24px] shadow-sm dark:shadow-none space-y-2">
+                  <div className="p-4 bg-white dark:bg-zinc-950 border border-[#B45309]/10 rounded-[20px] shadow-sm space-y-2">
                     <div className="flex justify-between text-xs font-black text-slate-400">
-                      <span>কেনাকাটার অগ্রগতি</span><span>{progress}% সম্পন্ন</span>
+                      <span>কেনাকাটার অগ্রগতি</span><span>{progress}% সম্পন্ন · {completedTodos.length}/{todos.length} আইটেম</span>
                     </div>
                     <div className="w-full h-3 bg-[#F9F4F0] dark:bg-zinc-900 rounded-full overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-[#B45309] to-emerald-500 rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
                     </div>
                   </div>
                 )}
+
+                {/* Category Filter */}
                 <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                   <button onClick={() => setBazarCatFilter('all')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 ${bazarCatFilter === 'all' ? 'bg-[#18181B] dark:bg-white text-white dark:text-black' : 'bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 text-slate-500'}`}>🛒 সব</button>
                   {BAZAR_CATEGORIES.map(c => (
                     <button key={c.id} onClick={() => setBazarCatFilter(c.id)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex-shrink-0 ${bazarCatFilter === c.id ? 'bg-[#18181B] dark:bg-white text-white dark:text-black' : 'bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 text-slate-500'}`}>{c.emoji} {c.id}</button>
                   ))}
                 </div>
+
+                {/* Action Buttons */}
                 <div className="flex gap-3 flex-wrap">
-                  <button onClick={() => setAddTaskModal(true)} className="bg-[#B45309] text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 hover:bg-[#92400E] transition-all shadow-lg shadow-[#B45309]/30 text-sm"><Plus className="w-4 h-4" /> আইটেম যোগ করুন</button>
+                  <button onClick={() => { setTaskNameInput(''); setTaskQty(''); setTaskUnit('কেজি'); setSmartSuggestions([]); setAddTaskModal(true); }} className="bg-[#B45309] text-white px-5 py-3 rounded-2xl font-black flex items-center gap-2 hover:bg-[#92400E] transition-all shadow-lg shadow-[#B45309]/30 text-sm">
+                    <Plus className="w-4 h-4" /> আইটেম যোগ করুন
+                  </button>
                   {completedTodos.length > 0 && (
-                    <button onClick={async () => { if (window.confirm(`${completedTodos.length}টি সম্পন্ন আইটেম মুছবেন?`)) { await Promise.all(completedTodos.map(t => insforge.database.from('todos').delete().eq('id', t.id))); await fetchAll(); }}} className="px-6 py-3 rounded-2xl font-black text-sm border border-rose-200 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all flex items-center gap-2"><Trash2 className="w-4 h-4" /> সম্পন্নগুলো মুছুন</button>
+                    <>
+                      <button onClick={() => setShowPurchaseHistory(!showPurchaseHistory)} className={`px-5 py-3 rounded-2xl font-black text-sm border transition-all flex items-center gap-2 ${showPurchaseHistory ? 'bg-[#18181B] text-white border-[#18181B]' : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-400'}`}>
+                        <History className="w-4 h-4" /> কেনার ইতিহাস
+                      </button>
+                      <button onClick={async () => { if (window.confirm(`${completedTodos.length}টি সম্পন্ন আইটেম মুছবেন?`)) { await Promise.all(completedTodos.map(t => insforge.database.from('todos').delete().eq('id', t.id))); await fetchAll(); }}} className="px-5 py-3 rounded-2xl font-black text-sm border border-rose-200 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all flex items-center gap-2">
+                        <Trash2 className="w-4 h-4" /> সম্পন্নগুলো মুছুন
+                      </button>
+                    </>
                   )}
                   {todos.filter(t => !t.isCompleted).length > 0 && (
-                    <a href={`https://wa.me/?text=${encodeURIComponent('🛒 বাজার তালিকা:\n' + todos.filter(t => !t.isCompleted).map((t, i) => `${i+1}. ${t.text}${t.quantity ? ` (${t.quantity})` : ''}${t.estimated_price > 0 ? ` ~৳${t.estimated_price}` : ''}`).join('\n'))}`} target="_blank" rel="noreferrer" className="px-6 py-3 rounded-2xl font-black text-sm border border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all flex items-center gap-2">
+                    <a href={`https://wa.me/?text=${encodeURIComponent('🛒 বাজার তালিকা:\n' + todos.filter(t => !t.isCompleted).map((t, i) => `${i+1}. ${t.text}${t.actual_qty || t.quantity ? ` (${t.actual_qty || t.quantity} ${t.unit || ''})` : ''}${t.estimated_price > 0 ? ` ~৳${t.estimated_price}` : ''}`).join('\n'))}`} target="_blank" rel="noreferrer" className="px-5 py-3 rounded-2xl font-black text-sm border border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all flex items-center gap-2">
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.196-.196.397-.4.596-.605.199-.205.267-.347.4-.578.133-.232.065-.413 0-.578-.065-.165-.598-1.438-.816-1.973-.215-.527-.436-.456-.6-.464-.163-.006-.351-.008-.54-.008-.189 0-.494.071-.754.356-.26.285-1 .978-1 2.38s1.024 2.76 1.166 2.95c.14.19 2.006 3.06 4.862 4.294.68.293 1.209.467 1.622.599.682.217 1.303.186 1.794.113.548-.082 1.758-.719 2.006-1.413.248-.694.248-1.288.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.01 2C6.477 2 2 6.477 2 12.01c0 1.754.459 3.399 1.258 4.832L2.003 22l5.315-1.215A9.956 9.956 0 0012.01 22C17.543 22 22 17.523 22 12.01S17.543 2 12.01 2zm0 18.02a8.028 8.028 0 01-4.09-1.115l-.294-.175-3.145.72.767-3.064-.19-.31A8.014 8.014 0 014 12.01C4 7.58 7.58 4 12.01 4S20.02 7.58 20.02 12.01 16.44 20.02 12.01 20.02z"/></svg>
                       WhatsApp
                     </a>
                   )}
                 </div>
+
+                {/* To-Buy List */}
                 {filtered.length === 0 && todos.filter(t => !t.isCompleted).length === 0 ? (
-                  <div className="text-center py-20 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px]">
+                  <div className="text-center py-16 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px]">
                     <ListOrdered className="w-16 h-16 text-slate-200 dark:text-zinc-700 mx-auto mb-4" />
                     <p className="text-slate-400 dark:text-zinc-500 font-black uppercase text-xs tracking-widest">বাজার তালিকা খালি</p>
+                    <p className="text-slate-300 dark:text-zinc-600 text-xs mt-2 font-bold">উপরের বাটনে ক্লিক করে আইটেম যোগ করুন</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {filtered.map(t => {
                       const pr = PRIORITIES.find(p => p.id === t.priority) || PRIORITIES[1];
                       const cat = BAZAR_CATEGORIES.find(c => c.id === t.category);
+                      const smartItem = SMART_ITEMS.find(s => s.name === t.text);
                       return (
-                        <div key={t.id} className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none group hover:border-[#B45309]/30 transition-all">
-                          <button onClick={async () => { await insforge.database.from('todos').update({ is_completed: true }).eq('id', t.id); await fetchAll(); }} className="w-9 h-9 rounded-xl border-2 border-[#B45309]/30 flex items-center justify-center hover:bg-[#B45309] hover:border-[#B45309] hover:text-white transition-all text-transparent flex-shrink-0"><Check className="w-4 h-4" /></button>
-                          <span className="text-xl flex-shrink-0">{cat?.emoji || '📦'}</span>
+                        <div key={t.id} className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-2xl shadow-sm group hover:border-[#B45309]/30 transition-all">
+                          {/* Check button → opens purchase modal */}
+                          <button
+                            onClick={() => setPurchaseModal(t)}
+                            className="w-10 h-10 rounded-xl border-2 border-[#B45309]/30 flex items-center justify-center hover:bg-[#B45309] hover:border-[#B45309] hover:text-white transition-all text-transparent flex-shrink-0 group/btn"
+                            title="কেনা হয়েছে"
+                          >
+                            <Check className="w-5 h-5 group-hover/btn:text-white text-transparent transition-all" />
+                          </button>
+                          <span className="text-xl flex-shrink-0">{smartItem?.emoji || cat?.emoji || '📦'}</span>
                           <div className="flex-1 min-w-0">
-                            <p className="font-black text-[#18181B] dark:text-white/95 truncate">{t.text}</p>
+                            <p className="font-black text-[#18181B] dark:text-white/95">{t.text}</p>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              {t.quantity && <span className="text-[10px] font-black text-slate-400 bg-[#F9F4F0] dark:bg-zinc-900 px-2 py-0.5 rounded-full">{t.quantity}</span>}
+                              {(t.actual_qty || t.quantity) && (
+                                <span className="text-[10px] font-black text-slate-500 bg-[#F9F4F0] dark:bg-zinc-900 px-2 py-0.5 rounded-full">
+                                  {t.actual_qty || t.quantity} {t.unit || ''}
+                                </span>
+                              )}
                               {t.estimated_price > 0 && <span className="text-[10px] font-black text-[#B45309]">~{currency}{t.estimated_price}</span>}
                               <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${pr.color}`}>{pr.dot} {pr.label}</span>
                             </div>
                           </div>
-                          <div className="flex opacity-0 group-hover:opacity-100 transition-all gap-1">
+                          <div className="flex opacity-0 group-hover:opacity-100 transition-all gap-1 flex-shrink-0">
                             <button onClick={() => setEditTaskModal(t)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500 rounded-xl"><Edit2 className="w-4 h-4" /></button>
                             <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
                           </div>
@@ -1457,29 +1536,51 @@ export default function AppOverview() {
                     })}
                   </div>
                 )}
+
+                {/* Purchase History — Completed Items */}
                 {completedTodos.length > 0 && (
                   <>
-                    <div className="flex items-center gap-3 pt-2">
+                    <div className="flex items-center gap-3 pt-1">
                       <div className="flex-1 h-px bg-[#B45309]/10" />
-                      <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest">কেনা হয়েছে ({completedTodos.length}টি)</span>
+                      <button onClick={() => setShowPurchaseHistory(!showPurchaseHistory)} className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-2 hover:text-[#B45309] transition-colors">
+                        {showPurchaseHistory ? '▲' : '▼'} কেনা হয়েছে ({completedTodos.length}টি) · মোট {currency}{totalActualSpent.toLocaleString()}
+                      </button>
                       <div className="flex-1 h-px bg-[#B45309]/10" />
                     </div>
-                    <div className="space-y-2">
-                      {completedTodos.map(t => {
-                        const cat = BAZAR_CATEGORIES.find(c => c.id === t.category);
-                        return (
-                          <div key={t.id} className="flex items-center gap-4 p-4 bg-[#F9F4F0] dark:bg-black border border-[#B45309]/5 rounded-2xl opacity-60 group">
-                            <button onClick={async () => { await insforge.database.from('todos').update({ is_completed: false }).eq('id', t.id); await fetchAll(); }} className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white flex-shrink-0"><Check className="w-4 h-4" /></button>
-                            <span className="text-xl flex-shrink-0">{cat?.emoji || '📦'}</span>
-                            <div className="flex-1">
-                              <p className="font-black text-slate-400 dark:text-zinc-500 line-through">{t.text}</p>
-                              {(t.quantity || t.estimated_price > 0) && <p className="text-[10px] text-slate-400">{t.quantity}{t.estimated_price > 0 ? ` · ~${currency}${t.estimated_price}` : ''}</p>}
+                    {showPurchaseHistory && (
+                      <div className="space-y-2 bg-[#F9F4F0] dark:bg-zinc-900/50 rounded-[24px] p-4">
+                        {completedTodos.map(t => {
+                          const cat = BAZAR_CATEGORIES.find(c => c.id === t.category);
+                          const smartItem = SMART_ITEMS.find(s => s.name === t.text);
+                          return (
+                            <div key={t.id} className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-950 rounded-xl border border-[#B45309]/5 group">
+                              <button onClick={async () => { await insforge.database.from('todos').update({ is_completed: false }).eq('id', t.id); await fetchAll(); }} className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white flex-shrink-0 hover:bg-amber-500 transition-colors" title="undo">
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <span className="text-lg flex-shrink-0">{smartItem?.emoji || cat?.emoji || '📦'}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-black text-slate-500 dark:text-zinc-400 line-through text-sm">{t.text}</p>
+                                <div className="flex flex-wrap gap-2 mt-0.5">
+                                  {(t.actual_qty || t.quantity) && (
+                                    <span className="text-[10px] font-bold text-slate-400">{t.actual_qty || t.quantity} {t.unit || ''}</span>
+                                  )}
+                                  {t.actual_price > 0 && (
+                                    <span className="text-[10px] font-black text-emerald-600">৳{t.actual_price.toLocaleString()} <span className="font-normal text-slate-400">প্রকৃত</span></span>
+                                  )}
+                                  {t.estimated_price > 0 && t.actual_price > 0 && t.estimated_price !== t.actual_price && (
+                                    <span className={`text-[10px] font-black ${t.actual_price > t.estimated_price ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                      {t.actual_price > t.estimated_price ? `+${currency}${t.actual_price - t.estimated_price}` : `-${currency}${t.estimated_price - t.actual_price}`}
+                                    </span>
+                                  )}
+                                  {t.purchased_at && <span className="text-[10px] text-slate-300 dark:text-zinc-600 font-bold">{t.purchased_at}</span>}
+                                </div>
+                              </div>
+                              <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 rounded-xl hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
                             </div>
-                            <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
-                          </div>
-                        );
-                      })}
-                    </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -2274,22 +2375,147 @@ export default function AppOverview() {
       <AnimatePresence>
         {addTaskModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setAddTaskModal(false); }}>
-            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
-              <button onClick={() => setAddTaskModal(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
-              <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><ListOrdered className="w-6 h-6 text-[#B45309]" /> নতুন আইটেম</h3>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-7 rounded-[40px] w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
+              <button onClick={() => setAddTaskModal(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 z-10"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-1 flex items-center gap-3"><ListOrdered className="w-6 h-6 text-[#B45309]" /> নতুন আইটেম</h3>
+              <p className="text-xs text-slate-400 font-bold mb-5">নাম টাইপ করুন, suggestion আসবে স্বয়ংক্রিয়ভাবে</p>
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const fm = new FormData(e.currentTarget);
-                const text = (fm.get('text') as string).trim();
+                const text = taskNameInput.trim() || (fm.get('text') as string || '').trim();
                 if (!text) return;
-                await insforge.database.from('todos').insert({ text, is_completed: false, user_id: currentUser!.id, category: fm.get('category') as string, quantity: fm.get('quantity') as string, priority: fm.get('priority') as string, estimated_price: Number(fm.get('estimated_price')) || 0 });
+                const qty = taskQty.trim();
+                const unit = taskUnit;
+                await insforge.database.from('todos').insert([{
+                  text,
+                  is_completed: false,
+                  user_id: currentUser!.id,
+                  category: fm.get('category') as string,
+                  quantity: qty,
+                  unit: unit,
+                  priority: fm.get('priority') as string,
+                  estimated_price: Number(fm.get('estimated_price')) || 0,
+                  actual_price: 0,
+                  actual_qty: '',
+                  purchased_at: '',
+                }]);
                 await fetchAll();
                 setAddTaskModal(false);
+                setSmartSuggestions([]);
+                setTaskNameInput('');
+                setTaskQty('');
+                setTaskUnit('কেজি');
               }} className="space-y-4">
-                <div>
+
+                {/* Item Name with Smart Suggestions */}
+                <div className="relative">
                   <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আইটেমের নাম *</label>
-                  <input name="text" required className={inputCls + " w-full mt-2"} placeholder="যেমন: আলু, চাল, ডিম..." autoFocus />
+                  <input
+                    name="text"
+                    value={taskNameInput}
+                    onChange={e => {
+                      const v = e.target.value;
+                      setTaskNameInput(v);
+                      if (v.length >= 1) {
+                        const matches = SMART_ITEMS.filter(s => s.name.includes(v) || v.includes(s.name.slice(0, 2)));
+                        setSmartSuggestions(matches.slice(0, 6));
+                      } else {
+                        setSmartSuggestions([]);
+                      }
+                    }}
+                    required
+                    className={inputCls + " w-full mt-2"}
+                    placeholder="যেমন: চাল, ডিম, পেঁয়াজ..."
+                    autoFocus
+                    autoComplete="off"
+                  />
+                  {/* Suggestion Dropdown */}
+                  {smartSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-900 border border-[#B45309]/10 rounded-2xl shadow-xl z-50 overflow-hidden">
+                      {smartSuggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => {
+                            setTaskNameInput(s.name);
+                            setTaskUnit(s.unit);
+                            setSmartSuggestions([]);
+                            // Auto-set category select
+                            const catSelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+                            if (catSelect) catSelect.value = s.category;
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#B45309]/5 text-left transition-colors border-b border-[#B45309]/5 last:border-0"
+                        >
+                          <span className="text-xl">{s.emoji}</span>
+                          <div>
+                            <span className="font-black text-sm text-[#18181B] dark:text-white">{s.name}</span>
+                            <span className="text-[10px] text-slate-400 font-bold ml-2">· {s.unit} · {s.category}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
+
+                {/* Quick Suggestions Chips */}
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">দ্রুত যোগ করুন</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['চাল', 'ডিম', 'তেল', 'পেঁয়াজ', 'আলু', 'ডাল', 'মুরগি', 'দুধ'].map(name => {
+                      const item = SMART_ITEMS.find(s => s.name === name);
+                      return (
+                        <button
+                          key={name}
+                          type="button"
+                          onClick={() => {
+                            setTaskNameInput(name);
+                            if (item) {
+                              setTaskUnit(item.unit);
+                              const catSelect = document.querySelector('select[name="category"]') as HTMLSelectElement;
+                              if (catSelect) catSelect.value = item.category;
+                            }
+                            setSmartSuggestions([]);
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-[#F9F4F0] dark:bg-zinc-900 text-sm font-black text-[#18181B] dark:text-white hover:bg-[#B45309]/10 hover:text-[#B45309] transition-all border border-[#B45309]/5"
+                        >
+                          {item?.emoji || '📦'} {name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Quantity + Unit */}
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ ও একক</label>
+                  <div className="flex gap-2 mt-2">
+                    <input
+                      value={taskQty}
+                      onChange={e => setTaskQty(e.target.value)}
+                      className={inputCls + " flex-1"}
+                      placeholder="যেমন: ১, ২.৫, ৫০০"
+                      type="text"
+                      inputMode="decimal"
+                    />
+                    <select
+                      value={taskUnit}
+                      onChange={e => setTaskUnit(e.target.value)}
+                      className={inputCls + " w-28 appearance-none"}
+                    >
+                      {COMMON_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                  </div>
+                  {/* Quick unit chips */}
+                  <div className="flex gap-1.5 mt-2 flex-wrap">
+                    {['কেজি', 'গ্রাম', '৫০০গ্রাম', 'লিটার', 'পিস', 'হালি', 'ডজন'].map(u => (
+                      <button key={u} type="button" onClick={() => setTaskUnit(u)}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${taskUnit === u ? 'bg-[#B45309] text-white' : 'bg-[#F9F4F0] dark:bg-zinc-900 text-slate-500 hover:bg-[#B45309]/10'}`}>
+                        {u}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
@@ -2298,38 +2524,112 @@ export default function AppOverview() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ</label>
-                    <input name="quantity" className={inputCls + " w-full mt-2"} placeholder="১ কেজি, ৫০০গ্রাম..." />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
                     <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">প্রায়োরিটি</label>
                     <select name="priority" className={inputCls + " w-full mt-2 appearance-none"}>
                       {PRIORITIES.map(p => <option key={p.id} value={p.id}>{p.dot} {p.label}</option>)}
                     </select>
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আনুমানিক (৳)</label>
-                    <input type="number" name="estimated_price" className={inputCls + " w-full mt-2"} placeholder="০" min="0" />
-                  </div>
                 </div>
-                <button type="submit" className="w-full bg-[#B45309] text-white font-black py-4 rounded-2xl mt-2 flex items-center justify-center gap-2 shadow-xl shadow-[#B45309]/30 hover:bg-[#92400E] transition-all"><Plus className="w-5 h-5" /> যোগ করুন</button>
+
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আনুমানিক দাম (৳)</label>
+                  <input type="number" name="estimated_price" className={inputCls + " w-full mt-2"} placeholder="০" min="0" />
+                </div>
+
+                <button type="submit" className="w-full bg-[#B45309] text-white font-black py-4 rounded-2xl mt-1 flex items-center justify-center gap-2 shadow-xl shadow-[#B45309]/30 hover:bg-[#92400E] transition-all">
+                  <Plus className="w-5 h-5" /> তালিকায় যোগ করুন
+                </button>
               </form>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* PURCHASE MODAL — "কত দামে কিনলেন?" */}
       <AnimatePresence>
-        {editTaskModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setEditTaskModal(null); }}>
-            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
-              <button onClick={() => setEditTaskModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
-              <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><Edit2 className="w-6 h-6 text-emerald-500" /> এডিট আইটেম</h3>
+        {purchaseModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[120] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setPurchaseModal(null); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-7 rounded-[40px] w-full max-w-sm shadow-2xl relative">
+              <button onClick={() => setPurchaseModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-3">
+                  {SMART_ITEMS.find(s => s.name === purchaseModal.text)?.emoji || BAZAR_CATEGORIES.find(c => c.id === purchaseModal.category)?.emoji || '📦'}
+                </div>
+                <h3 className="text-xl font-black">{purchaseModal.text} কেনা হয়েছে?</h3>
+                <p className="text-xs text-slate-400 font-bold mt-1">আনুমানিক ছিল: {purchaseModal.estimated_price > 0 ? `৳${purchaseModal.estimated_price}` : 'উল্লেখ নেই'}</p>
+              </div>
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const fm = new FormData(e.currentTarget);
-                await insforge.database.from('todos').update({ text: (fm.get('text') as string).trim(), category: fm.get('category') as string, quantity: fm.get('quantity') as string, priority: fm.get('priority') as string, estimated_price: Number(fm.get('estimated_price')) || 0 }).eq('id', editTaskModal.id);
+                const actualPrice = Number(fm.get('actual_price')) || 0;
+                const actualQty = (fm.get('actual_qty') as string).trim();
+                const unit = (fm.get('unit') as string).trim();
+                const today = format(new Date(), 'dd MMM yyyy');
+                await insforge.database.from('todos').update({
+                  is_completed: true,
+                  actual_price: actualPrice,
+                  actual_qty: actualQty,
+                  unit: unit || purchaseModal.unit,
+                  purchased_at: today,
+                }).eq('id', purchaseModal.id);
+                await fetchAll();
+                setPurchaseModal(null);
+                setShowPurchaseHistory(true);
+              }} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">কত নিলেন?</label>
+                    <input name="actual_qty" defaultValue={purchaseModal.actual_qty || purchaseModal.quantity} className={inputCls + " w-full mt-2"} placeholder="১, ২.৫..." inputMode="decimal" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">একক</label>
+                    <select name="unit" defaultValue={purchaseModal.unit || 'কেজি'} className={inputCls + " w-full mt-2 appearance-none"}>
+                      {COMMON_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">মোট কত টাকা দিলেন? (৳)</label>
+                  <input type="number" name="actual_price" defaultValue={purchaseModal.estimated_price || ''} className={inputCls + " w-full mt-2 text-lg font-black"} placeholder="০" min="0" autoFocus />
+                </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={async () => {
+                    // Skip price entry, just mark done
+                    const today = format(new Date(), 'dd MMM yyyy');
+                    await insforge.database.from('todos').update({ is_completed: true, purchased_at: today }).eq('id', purchaseModal.id);
+                    await fetchAll();
+                    setPurchaseModal(null);
+                    setShowPurchaseHistory(true);
+                  }} className="flex-1 py-3.5 rounded-2xl font-black text-sm border border-slate-200 dark:border-zinc-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-all">
+                    দাম ছাড়াই ✓
+                  </button>
+                  <button type="submit" className="flex-1 bg-emerald-500 text-white font-black py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/30">
+                    <Check className="w-4 h-4" /> সংরক্ষণ
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {editTaskModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setEditTaskModal(null); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-7 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setEditTaskModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-5 flex items-center gap-3"><Edit2 className="w-6 h-6 text-emerald-500" /> আইটেম এডিট</h3>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const fm = new FormData(e.currentTarget);
+                await insforge.database.from('todos').update({
+                  text: (fm.get('text') as string).trim(),
+                  category: fm.get('category') as string,
+                  quantity: (fm.get('quantity') as string).trim(),
+                  unit: (fm.get('unit') as string).trim(),
+                  priority: fm.get('priority') as string,
+                  estimated_price: Number(fm.get('estimated_price')) || 0,
+                }).eq('id', editTaskModal.id);
                 await fetchAll();
                 setEditTaskModal(null);
               }} className="space-y-4">
@@ -2337,7 +2637,19 @@ export default function AppOverview() {
                   <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আইটেমের নাম *</label>
                   <input name="text" required defaultValue={editTaskModal.text} className={inputCls + " w-full mt-2"} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ</label>
+                    <input name="quantity" defaultValue={editTaskModal.quantity} className={inputCls + " w-full mt-2"} placeholder="১, ২.৫..." />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">একক</label>
+                    <select name="unit" defaultValue={editTaskModal.unit || 'কেজি'} className={inputCls + " w-full mt-2 appearance-none"}>
+                      {COMMON_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
                     <select name="category" defaultValue={editTaskModal.category} className={inputCls + " w-full mt-2 appearance-none"}>
@@ -2345,28 +2657,23 @@ export default function AppOverview() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরিমাণ</label>
-                    <input name="quantity" defaultValue={editTaskModal.quantity} className={inputCls + " w-full mt-2"} placeholder="১ কেজি..." />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
                     <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">প্রায়োরিটি</label>
                     <select name="priority" defaultValue={editTaskModal.priority} className={inputCls + " w-full mt-2 appearance-none"}>
                       {PRIORITIES.map(p => <option key={p.id} value={p.id}>{p.dot} {p.label}</option>)}
                     </select>
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আনুমানিক (৳)</label>
-                    <input type="number" name="estimated_price" defaultValue={editTaskModal.estimated_price || 0} className={inputCls + " w-full mt-2"} min="0" />
-                  </div>
                 </div>
-                <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl mt-2 flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">আপডেট করুন</button>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">আনুমানিক দাম (৳)</label>
+                  <input type="number" name="estimated_price" defaultValue={editTaskModal.estimated_price || 0} className={inputCls + " w-full mt-2"} min="0" />
+                </div>
+                <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-all">আপডেট করুন</button>
               </form>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
 
       {/* SHOP CREDIT MODALS */}
 

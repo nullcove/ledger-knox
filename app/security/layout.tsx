@@ -10,9 +10,17 @@ export const metadata: Metadata = {
     title: 'নিরাপত্তা | Ledger Knox',
     description: 'Ledger Knox সর্বোচ্চ নিরাপত্তায় আপনার আর্থিক ডাটা সুরক্ষিত রাখে।',
     url: 'https://ledgerknox.nullcove.com/security',
+    images: [{ url: 'https://ledgerknox.nullcove.com/opengraph-image', width: 1200, height: 630, alt: 'Ledger Knox Security' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'নিরাপত্তা | Ledger Knox',
+    description: 'Ledger Knox সর্বোচ্চ নিরাপত্তায় আপনার ডাটা সুরক্ষিত।',
+    images: ['https://ledgerknox.nullcove.com/opengraph-image'],
   },
 };
 
 export default function SecurityLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
+
