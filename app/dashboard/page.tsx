@@ -22,6 +22,7 @@ import { bn } from 'date-fns/locale';
 import CustomCursor from '@/components/CustomCursor';
 import { insforge } from '@/lib/insforge';
 
+// Build Trigger: v1.0.1 - Ensuring Bazar Talika upgrade is live
 // ================= TYPES =================
 type TransactionType = 'expense' | 'income' | 'transfer';
 type WalletType = 'cash' | 'bkash' | 'nagad' | 'bank';
