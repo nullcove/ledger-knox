@@ -36,6 +36,8 @@ interface Goal { id: string; name: string; target: number; saved: number; }
 interface DebtPayment { id: string; amount: number; date: string; note: string; }
 interface Debt { id: string; person: string; amount: number; type: 'borrowed' | 'lent'; note?: string; created_at: string; status?: string; paid_amount?: number; payments?: DebtPayment[]; }
 interface Subscription { id: string; name: string; amount: number; nextDate: string; }
+interface ShopCreditPayment { id: string; amount: number; date: string; note: string; }
+interface ShopCredit { id: string; shop_name: string; category: string; total_amount: number; paid_amount: number; note?: string; status: string; created_at: string; payments?: ShopCreditPayment[]; }
 interface Budget { id: string; category: string; monthly_limit: number; }
 interface Profile {
   id?: string; display_name?: string; avatar_url?: string;
@@ -72,11 +74,14 @@ const SIDEBAR_ITEMS = [
   { id: 'budget', label: 'বাজেট ও লিমিট', icon: Target },
   { id: 'goals', label: 'জমানো টাকা', icon: PiggyBank },
   { id: 'debts', label: 'ধার-দেনা', icon: Briefcase },
+  { id: 'shop_credit', label: 'দোকান বাকি', icon: ShoppingCart },
   { id: 'recurring', label: 'রিকারিং বিল', icon: RefreshCw },
   { id: 'tasks', label: 'বাজার তালিকা', icon: ListOrdered },
   { id: 'analytics', label: 'বিশ্লেষণ', icon: BarChart3 },
   { id: 'settings', label: 'সেটিংস', icon: Settings },
 ];
+
+const SHOP_CATEGORIES = ['মুদিখানা', 'রেস্তোরাঁ', 'ওষুধ', 'কাপড়', 'মোবাইল/ইলেকট্রনিক্স', 'অন্যান্য'];
 
 const PIE_COLORS = ['#B45309', '#D97706', '#18181B', '#92400E', '#78716C'];
 
@@ -149,6 +154,28 @@ export default function AppOverview() {
   const [debtNameSearch, setDebtNameSearch] = useState('');
   const [showDebtSuggestions, setShowDebtSuggestions] = useState(false);
   const [editModalDebt, setEditModalDebt] = useState<Debt | null>(null);
+  const [editBudgetModal, setEditBudgetModal] = useState<Budget | null>(null);
+  const [editGoalModal, setEditGoalModal] = useState<Goal | null>(null);
+  const [editSubModal, setEditSubModal] = useState<Subscription | null>(null);
+  const [editTodoModal, setEditTodoModal] = useState<Todo | null>(null);
+
+  // Shop Credit state
+  const [shopCredits, setShopCredits] = useState<ShopCredit[]>([]);
+  const [shopCreditFilter, setShopCreditFilter] = useState<'all'|'pending'|'settled'>('pending');
+  const [shopCreditSearch, setShopCreditSearch] = useState('');
+  const [shopCreditCatFilter, setShopCreditCatFilter] = useState('all');
+  const [addShopModal, setAddShopModal] = useState(false);
+  const [shopNameInput, setShopNameInput] = useState('');
+  const [showShopSuggestions, setShowShopSuggestions] = useState(false);
+  const [payShopModal, setPayShopModal] = useState<ShopCredit | null>(null);
+  const [shopHistoryModal, setShopHistoryModal] = useState<ShopCredit | null>(null);
+  const [editShopModal, setEditShopModal] = useState<ShopCredit | null>(null);
+
+  // Add modal states for inline forms
+  const [addBudgetModal, setAddBudgetModal] = useState(false);
+  const [addGoalModal, setAddGoalModal] = useState(false);
+  const [addDebtModal, setAddDebtModal] = useState(false);
+  const [addRecurringModal, setAddRecurringModal] = useState(false);
 
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -190,7 +217,7 @@ export default function AppOverview() {
       if (!userDat.user) return;
       setCurrentUser(userDat.user);
 
-      const [txRes, dpsRes, tdRes, goRes, dbRes, subRes, budRes, profRes] = await Promise.all([
+      const results = await Promise.all([
         insforge.database.from('transactions').select('*').order('date', { ascending: false }),
         insforge.database.from('debt_payments').select('*').order('date', { ascending: false }),
         insforge.database.from('todos').select('*').order('created_at', { ascending: false }),
@@ -199,7 +226,10 @@ export default function AppOverview() {
         insforge.database.from('subscriptions').select('*').order('next_date', { ascending: true }),
         insforge.database.from('budgets').select('*').order('created_at', { ascending: true }),
         insforge.database.from('profiles').select('*').eq('id', userDat.user.id),
+        insforge.database.from('shop_credits').select('*').order('created_at', { ascending: false }),
+        insforge.database.from('shop_credit_payments').select('*').order('date', { ascending: false }),
       ]);
+      const [txRes, dpsRes, tdRes, goRes, dbRes, subRes, budRes, profRes, scRes, scpRes] = results;
 
       if (txRes.data) {
         const txs: Transaction[] = txRes.data.map((d: any) => ({
@@ -228,6 +258,14 @@ export default function AppOverview() {
       }
       if (subRes.data) setSubscriptions(subRes.data.map((d: any) => ({ id: d.id, name: d.name, amount: Number(d.amount), nextDate: d.next_date })));
       if (budRes.data) setBudgets(budRes.data.map((d: any) => ({ id: d.id, category: d.category, monthly_limit: Number(d.monthly_limit) })));
+      if (scRes?.data) {
+        const scps = scpRes?.data || [];
+        setShopCredits(scRes.data.map((d: any) => {
+          const payments = scps.filter((p: any) => p.credit_id === d.id).map((p: any) => ({ id: p.id, amount: Number(p.amount), date: p.date, note: p.note }));
+          const paid = payments.reduce((acc: number, p: any) => acc + p.amount, 0);
+          return { id: d.id, shop_name: d.shop_name, category: d.category || 'অন্যান্য', total_amount: Number(d.total_amount), paid_amount: paid, note: d.note, status: d.status || 'pending', created_at: d.created_at, payments };
+        }));
+      }
       if (profRes.data && profRes.data.length > 0) {
         const p = profRes.data[0];
         setProfile(p);
@@ -260,7 +298,32 @@ export default function AppOverview() {
 
   // ─── HANDLERS ───────────────────────────────────
   // ─── DEBT HANDLERS ──────────────────────────────
-  const handleEditDebt = async (e: React.FormEvent) => {
+  const handleEditBudget = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); const fm = new FormData(e.currentTarget);
+    if (!editBudgetModal) return;
+    await insforge.database.from('budgets').update({ category: fm.get('category'), monthly_limit: Number(fm.get('limit')) }).eq('id', editBudgetModal.id);
+    setEditBudgetModal(null); await fetchAll();
+  };
+  const handleEditGoal = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); const fm = new FormData(e.currentTarget);
+    if (!editGoalModal) return;
+    await insforge.database.from('goals').update({ name: fm.get('name'), target: Number(fm.get('target')), saved: Number(fm.get('saved')) }).eq('id', editGoalModal.id);
+    setEditGoalModal(null); await fetchAll();
+  };
+  const handleEditSub = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); const fm = new FormData(e.currentTarget);
+    if (!editSubModal) return;
+    await insforge.database.from('subscriptions').update({ name: fm.get('name'), amount: Number(fm.get('amount')), next_date: new Date(fm.get('date') as string).toISOString() }).eq('id', editSubModal.id);
+    setEditSubModal(null); await fetchAll();
+  };
+  const handleEditTodo = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); const fm = new FormData(e.currentTarget);
+    if (!editTodoModal) return;
+    await insforge.database.from('todos').update({ text: fm.get('text') }).eq('id', editTodoModal.id);
+    setEditTodoModal(null); await fetchAll();
+  };
+
+  const handleEditDebt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editModalDebt) return;
     const fm = new FormData(e.currentTarget as HTMLFormElement);
@@ -302,6 +365,50 @@ export default function AppOverview() {
       await fetchAll();
       setRepayModalDebt(null);
     }
+  };
+
+  // ─── SHOP CREDIT HANDLERS ──────────────────────────
+  const handleAddShopCredit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fm = new FormData(e.currentTarget);
+    const { error } = await insforge.database.from('shop_credits').insert({
+      shop_name: fm.get('shop_name') as string,
+      category: fm.get('category') as string,
+      total_amount: Number(fm.get('total_amount')),
+      note: fm.get('note') as string,
+      user_id: currentUser!.id,
+    });
+    if (!error) { setAddShopModal(false); setShopNameInput(''); await fetchAll(); }
+  };
+
+  const handlePayShopCredit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!payShopModal) return;
+    const fm = new FormData(e.currentTarget);
+    const amt = Number(fm.get('amount'));
+    const note = fm.get('note') as string;
+    const { error } = await insforge.database.from('shop_credit_payments').insert({
+      credit_id: payShopModal.id, amount: amt, note,
+    });
+    if (!error) {
+      const newPaid = payShopModal.paid_amount + amt;
+      const newStatus = newPaid >= payShopModal.total_amount ? 'settled' : 'pending';
+      await insforge.database.from('shop_credits').update({ status: newStatus }).eq('id', payShopModal.id);
+      setPayShopModal(null); await fetchAll();
+    }
+  };
+
+  const handleEditShopCredit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editShopModal) return;
+    const fm = new FormData(e.currentTarget);
+    await insforge.database.from('shop_credits').update({
+      shop_name: fm.get('shop_name') as string,
+      category: fm.get('category') as string,
+      total_amount: Number(fm.get('total_amount')),
+      note: fm.get('note') as string,
+    }).eq('id', editShopModal.id);
+    setEditShopModal(null); await fetchAll();
   };
 
   const handleAddTransaction = async (e: React.FormEvent) => {
@@ -1020,7 +1127,10 @@ export default function AppOverview() {
                             <p className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest">লিমিট: {currency}{b.monthly_limit.toLocaleString()}</p>
                           </div>
                         </div>
-                        <button onClick={async () => { if (window.confirm('ডিলিট করবেন?')) { await insforge.database.from('budgets').delete().eq('id', b.id); await fetchAll(); } }} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-rose-500 transition-all"><Trash2 className="w-5 h-5" /></button>
+                        <div className="flex">
+                           <button onClick={() => setEditBudgetModal(b)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500 transition-all"><Edit2 className="w-5 h-5" /></button>
+                           <button onClick={async () => { if (window.confirm('ডিলিট করবেন?')) { await insforge.database.from('budgets').delete().eq('id', b.id); await fetchAll(); } }} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-rose-500 transition-all"><Trash2 className="w-5 h-5" /></button>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between font-black text-sm">
@@ -1101,7 +1211,10 @@ export default function AppOverview() {
                           </div>
                           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
                             <button onClick={async () => { const add = prompt('কত টাকা জমা করবেন?'); if (add && !isNaN(Number(add))) { await insforge.database.from('goals').update({ saved: g.saved + Number(add) }).eq('id', g.id); await fetchAll(); } }} className="p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl text-emerald-600 hover:bg-emerald-100"><Plus className="w-4 h-4" /></button>
-                            <button onClick={async () => { if (window.confirm('ডিলিট করবেন?')) { await insforge.database.from('goals').delete().eq('id', g.id); await fetchAll(); } }} className="p-2 bg-[#F9F4F0] dark:bg-black rounded-xl text-slate-400 dark:text-zinc-500 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
+                            <div className="flex gap-2">
+                               <button onClick={() => setEditGoalModal(g)} className="p-2 bg-[#F9F4F0] dark:bg-black rounded-xl text-slate-400 dark:text-zinc-500 hover:text-emerald-500"><Edit2 className="w-4 h-4" /></button>
+                               <button onClick={async () => { if (window.confirm('ডিলিট করবেন?')) { await insforge.database.from('goals').delete().eq('id', g.id); await fetchAll(); } }} className="p-2 bg-[#F9F4F0] dark:bg-black rounded-xl text-slate-400 dark:text-zinc-500 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
+                            </div>
                           </div>
                         </div>
                         <div className="space-y-3">
@@ -1202,7 +1315,7 @@ export default function AppOverview() {
                         <p className="text-[9px] font-black text-slate-400 text-right">{pct}% পরিশোধিত</p>
                       </div>
                       <div className="grid grid-cols-2 gap-2 mt-4">
-                         <button onClick={() => setRepayModalDebt(d)} disabled={d.status === 'settled'} className="py-2.5 rounded-xl border border-[#B45309] text-[#B45309] font-black text-[10px] uppercase tracking-widest hover:bg-[#B45309] hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#B45309]">কিস্তি দিন</button>
+                         <button onClick={() => setRepayModalDebt(d)} disabled={d.status === 'settled'} className="py-2.5 rounded-xl border border-[#B45309] text-[#B45309] font-black text-[10px] uppercase tracking-widest hover:bg-[#B45309] hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#B45309]">টাকা দিন/নিন</button>
                          <button onClick={() => setDebtHistoryModal(d)} className="py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-zinc-900 transition-all">হিস্ট্রি</button>
                       </div>
                       {d.status !== 'settled' && (
@@ -1258,7 +1371,10 @@ export default function AppOverview() {
                     <div key={s.id} className={`p-8 bg-white dark:bg-zinc-950 border rounded-[40px] shadow-sm dark:shadow-none group hover:scale-105 transition-all ${isDue ? 'border-rose-300 bg-rose-50 dark:bg-rose-950/20' : 'border-[#B45309]/10 dark:border-white/10'}`}>
                       <div className="flex justify-between items-start mb-6">
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isDue ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-500' : 'bg-[#B45309]/10 text-[#B45309]'}`}><RefreshCw className="w-7 h-7" /></div>
-                        <button onClick={async () => { if (window.confirm('ডিলিট করবেন?')) { await insforge.database.from('subscriptions').delete().eq('id', s.id); fetchAll(); } }} className="text-slate-300 dark:text-zinc-600 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all p-2"><Trash2 className="w-5 h-5" /></button>
+                        <div className="flex opacity-0 group-hover:opacity-100 transition-all">
+                            <button onClick={() => setEditSubModal(s)} className="text-slate-300 dark:text-zinc-600 hover:text-emerald-500 p-2"><Edit2 className="w-5 h-5" /></button>
+                            <button onClick={async () => { if (window.confirm('ডিলিট করবেন?')) { await insforge.database.from('subscriptions').delete().eq('id', s.id); fetchAll(); } }} className="text-slate-300 dark:text-zinc-600 hover:text-rose-500 p-2"><Trash2 className="w-5 h-5" /></button>
+                        </div>
                       </div>
                       <h4 className="text-2xl font-black mb-2">{s.name}</h4>
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest mb-6 text-[#B45309]">
@@ -1310,7 +1426,10 @@ export default function AppOverview() {
                   <div key={t.id} className="flex items-center gap-4 p-5 bg-white dark:bg-zinc-950 border border-[#B45309]/10 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-none group hover:border-[#B45309]/30 transition-all">
                     <button onClick={async () => { await insforge.database.from('todos').update({ is_completed: true }).eq('id', t.id); await fetchAll(); }} className="w-9 h-9 rounded-xl border-2 border-[#B45309]/30 flex items-center justify-center hover:bg-[#B45309] hover:border-[#B45309] hover:text-white transition-all text-transparent flex-shrink-0"><Check className="w-4 h-4" /></button>
                     <span className="flex-1 font-black text-[#18181B] dark:text-white/95">{t.text}</span>
-                    <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl opacity-0 group-hover:opacity-100 hover:text-rose-500 transition-all"><Trash2 className="w-4 h-4" /></button>
+                    <div className="flex opacity-0 group-hover:opacity-100 transition-all">
+                        <button onClick={() => setEditTodoModal(t)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500 rounded-xl"><Edit2 className="w-4 h-4" /></button>
+                        <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
+                    </div>
                   </div>
                 ))}
 
@@ -1325,7 +1444,10 @@ export default function AppOverview() {
                       <div key={t.id} className="flex items-center gap-4 p-5 bg-[#F9F4F0] dark:bg-black border border-[#B45309]/5 rounded-2xl opacity-60 group">
                         <button onClick={async () => { await insforge.database.from('todos').update({ is_completed: false }).eq('id', t.id); await fetchAll(); }} className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white flex-shrink-0"><Check className="w-4 h-4" /></button>
                         <span className="flex-1 font-black text-slate-400 dark:text-zinc-500 line-through">{t.text}</span>
-                        <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl opacity-0 group-hover:opacity-100 hover:text-rose-500 transition-all"><Trash2 className="w-4 h-4" /></button>
+                        <div className="flex opacity-0 group-hover:opacity-100 transition-all">
+                            <button onClick={() => setEditTodoModal(t)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500 rounded-xl"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={async () => { await insforge.database.from('todos').delete().eq('id', t.id); await fetchAll(); }} className="p-2 text-slate-300 dark:text-zinc-600 rounded-xl hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
+                        </div>
                       </div>
                     ))}
                   </>
@@ -1411,6 +1533,117 @@ export default function AppOverview() {
               </div>
             </div>
           )}
+
+          {/* ══════════════ SHOP CREDIT ══════════════ */}
+          {activeTab === 'shop_credit' && (() => {
+            const filtered = shopCredits.filter(s => {
+              const matchStatus = shopCreditFilter === 'all' ? true : shopCreditFilter === 'settled' ? s.status === 'settled' : s.status !== 'settled';
+              const matchCat = shopCreditCatFilter === 'all' ? true : s.category === shopCreditCatFilter;
+              const matchSearch = !shopCreditSearch || s.shop_name.toLowerCase().includes(shopCreditSearch.toLowerCase());
+              return matchStatus && matchCat && matchSearch;
+            });
+            const totalDue = shopCredits.filter(s => s.status !== 'settled').reduce((acc, s) => acc + (s.total_amount - s.paid_amount), 0);
+            const totalSettled = shopCredits.filter(s => s.status === 'settled').reduce((acc, s) => acc + s.total_amount, 0);
+            const thisMonthDue = shopCredits.filter(s => s.status !== 'settled' && isSameMonth(parseISO(s.created_at), new Date())).reduce((acc, s) => acc + (s.total_amount - s.paid_amount), 0);
+            return (
+              <div className="space-y-8 animate-mati">
+                {/* Summary */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  <div className="p-6 bg-[#18181B] dark:bg-zinc-900 rounded-[32px] text-center text-white shadow-2xl">
+                    <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">মোট বাকি</p>
+                    <p className="text-3xl font-black">{currency}{totalDue.toLocaleString()}</p>
+                  </div>
+                  <div className="p-6 bg-white dark:bg-zinc-950 border border-amber-200 dark:border-amber-800/30 rounded-[32px] text-center shadow-sm dark:shadow-none">
+                    <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">এই মাসে বাকি</p>
+                    <p className="text-3xl font-black text-amber-600">{currency}{thisMonthDue.toLocaleString()}</p>
+                  </div>
+                  <div className="p-6 bg-white dark:bg-zinc-950 border border-emerald-200 dark:border-emerald-800/30 rounded-[32px] text-center shadow-sm dark:shadow-none">
+                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">পরিশোধিত</p>
+                    <p className="text-3xl font-black text-emerald-600">{currency}{totalSettled.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* Search + Filters + Add */}
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <div className="relative flex-1 w-full">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input value={shopCreditSearch} onChange={e => setShopCreditSearch(e.target.value)} className={`${inputCls} pl-11 w-full`} placeholder="দোকানের নামে খুঁজুন..." />
+                  </div>
+                  <select value={shopCreditCatFilter} onChange={e => setShopCreditCatFilter(e.target.value)} className={`${inputCls} appearance-none`}>
+                    <option value="all">সব ক্যাটাগরি</option>
+                    {SHOP_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <div className="flex gap-2 bg-[#F9F4F0] dark:bg-zinc-900/50 p-1.5 rounded-2xl">
+                    {(['all','pending','settled'] as const).map(f => (
+                      <button key={f} onClick={() => setShopCreditFilter(f)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${shopCreditFilter === f ? 'bg-white dark:bg-zinc-950 text-[#18181B] dark:text-white shadow-sm' : 'text-slate-400 dark:text-zinc-500'}`}>{f === 'all' ? 'সব' : f === 'pending' ? 'বকেয়া' : 'পরিশোধিত'}</button>
+                    ))}
+                  </div>
+                  <button onClick={() => setAddShopModal(true)} className="bg-[#B45309] text-white px-6 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-[#92400E] transition-all shadow-xl dark:shadow-none shadow-[#B45309]/30 whitespace-nowrap">
+                    <Plus className="w-5 h-5" /> নতুন বাকি
+                  </button>
+                </div>
+
+                {/* Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filtered.map(s => {
+                    const remain = s.total_amount - s.paid_amount;
+                    const pct = s.total_amount > 0 ? Math.min(100, Math.round((s.paid_amount / s.total_amount) * 100)) : 0;
+                    return (
+                      <div key={s.id} className={`p-7 bg-white dark:bg-zinc-950 border rounded-[36px] shadow-sm dark:shadow-none flex flex-col gap-5 group hover:scale-[1.02] transition-all ${s.status === 'settled' ? 'border-emerald-200 dark:border-emerald-800/30' : 'border-[#B45309]/10 dark:border-white/10'}`}>
+                        {/* Header */}
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <span className="text-[9px] font-black text-[#B45309] uppercase tracking-widest bg-[#B45309]/10 px-2 py-1 rounded-full">{s.category}</span>
+                            <h4 className="text-xl font-black mt-2">{s.shop_name}</h4>
+                            {s.note && <p className="text-xs text-slate-400 italic mt-1">"{s.note}"</p>}
+                          </div>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onClick={() => setEditShopModal(s)} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-emerald-500"><Edit2 className="w-4 h-4" /></button>
+                            <button onClick={async () => { if(window.confirm('ডিলিট করবেন?')) { await insforge.database.from('shop_credits').delete().eq('id', s.id); await fetchAll(); }}} className="p-2 text-slate-300 dark:text-zinc-600 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </div>
+
+                        {/* Amount */}
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">মোট বাকি</p>
+                            <p className="text-2xl font-black text-rose-600">{currency}{remain.toLocaleString()}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">মোট</p>
+                            <p className="text-lg font-black">{currency}{s.total_amount.toLocaleString()}</p>
+                          </div>
+                        </div>
+
+                        {/* Progress */}
+                        <div className="space-y-1.5">
+                          <div className="w-full h-2.5 bg-[#F9F4F0] dark:bg-zinc-900 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full transition-all duration-700 ${s.status === 'settled' ? 'bg-emerald-500' : 'bg-[#B45309]'}`} style={{ width: `${pct}%` }} />
+                          </div>
+                          <div className="flex justify-between text-[9px] font-black text-slate-400">
+                            <span>{pct}% পরিশোধিত</span>
+                            <span className={`px-2 py-0.5 rounded-full ${s.status === 'settled' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30'}`}>{s.status === 'settled' ? '✓ পরিশোধিত' : 'বকেয়া'}</span>
+                          </div>
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <button onClick={() => setPayShopModal(s)} disabled={s.status === 'settled'} className="py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl border border-[#B45309] text-[#B45309] hover:bg-[#B45309] hover:text-white transition-all disabled:opacity-30">টাকা দিন</button>
+                          <button onClick={() => setShopHistoryModal(s)} className="py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-all">হিস্ট্রি</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {filtered.length === 0 && (
+                    <div className="col-span-3 text-center py-20 bg-white dark:bg-zinc-950 border border-dashed border-[#B45309]/20 rounded-[40px]">
+                      <ShoppingCart className="w-16 h-16 text-slate-200 dark:text-zinc-700 mx-auto mb-4" />
+                      <p className="text-slate-400 dark:text-zinc-500 font-black uppercase text-xs tracking-widest">কোনো বাকি নেই</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ══════════════ SETTINGS ══════════════ */}
           {activeTab === 'settings' && (
@@ -1721,7 +1954,7 @@ export default function AppOverview() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-center justify-center p-4" onClick={(e) => { if(e.target === e.currentTarget) setRepayModalDebt(null); }}>
             <div className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
               <button onClick={() => setRepayModalDebt(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
-              <h3 className="text-2xl font-black mb-6">কিস্তি পরিশোধ</h3>
+              <h3 className="text-2xl font-black mb-6">টাকা জমা/প্রদান</h3>
               <form onSubmit={handleRepayDebt} className="space-y-4">
                 <div>
                   <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">কত টাকা?</label>
@@ -1771,8 +2004,221 @@ export default function AppOverview() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AnimatePresence>
+        {editBudgetModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-center justify-center p-4" onClick={(e) => { if(e.target === e.currentTarget) setEditBudgetModal(null); }}>
+             <div className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+                <button onClick={() => setEditBudgetModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+                <h3 className="text-2xl font-black mb-6">বাজেট এডিট</h3>
+                <form onSubmit={handleEditBudget} className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
+                    <select name="category" defaultValue={editBudgetModal.category} className={inputCls + " w-full mt-2"}>
+                      {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.id}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">লিমিট</label>
+                    <input name="limit" type="number" defaultValue={editBudgetModal.monthly_limit} className={inputCls + " w-full mt-2"} />
+                  </div>
+                  <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl mt-4">আপডেট করুন</button>
+                </form>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {editGoalModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-center justify-center p-4" onClick={(e) => { if(e.target === e.currentTarget) setEditGoalModal(null); }}>
+             <div className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+                <button onClick={() => setEditGoalModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+                <h3 className="text-2xl font-black mb-6">লক্ষ্য এডিট</h3>
+                <form onSubmit={handleEditGoal} className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">লক্ষ্যের নাম</label>
+                    <input name="name" defaultValue={editGoalModal.name} className={inputCls + " w-full mt-2"} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">টার্গেট</label>
+                    <input name="target" type="number" defaultValue={editGoalModal.target} className={inputCls + " w-full mt-2"} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">মোট জমানো</label>
+                    <input name="saved" type="number" defaultValue={editGoalModal.saved} className={inputCls + " w-full mt-2"} />
+                  </div>
+                  <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl mt-4">আপডেট করুন</button>
+                </form>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {editSubModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-center justify-center p-4" onClick={(e) => { if(e.target === e.currentTarget) setEditSubModal(null); }}>
+             <div className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+                <button onClick={() => setEditSubModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+                <h3 className="text-2xl font-black mb-6">বিল এডিট</h3>
+                <form onSubmit={handleEditSub} className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">নাম</label>
+                    <input name="name" defaultValue={editSubModal.name} className={inputCls + " w-full mt-2"} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">অ্যামাউন্ট</label>
+                    <input name="amount" type="number" defaultValue={editSubModal.amount} className={inputCls + " w-full mt-2"} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">পরবর্তী তারিখ</label>
+                    <input type="date" name="date" defaultValue={format(new Date(editSubModal.nextDate), 'yyyy-MM-dd')} className={inputCls + " w-full mt-2"} />
+                  </div>
+                  <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl mt-4">আপডেট করুন</button>
+                </form>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {editTodoModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-center justify-center p-4" onClick={(e) => { if(e.target === e.currentTarget) setEditTodoModal(null); }}>
+             <div className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+                <button onClick={() => setEditTodoModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+                <h3 className="text-2xl font-black mb-6">তালিকা এডিট</h3>
+                <form onSubmit={handleEditTodo} className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">বিবরণ</label>
+                    <input name="text" defaultValue={editTodoModal.text} className={inputCls + " w-full mt-2"} />
+                  </div>
+                  <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl mt-4">আপডেট করুন</button>
+                </form>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
 
+
+      {/* SHOP CREDIT MODALS */}
+      <AnimatePresence>
+        {addShopModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setAddShopModal(false); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setAddShopModal(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-6 flex items-center gap-3"><ShoppingCart className="w-6 h-6 text-[#B45309]" /> নতুন বাকি যোগ করুন</h3>
+              <form onSubmit={handleAddShopCredit} className="space-y-4">
+                <div className="relative">
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">দোকানের নাম</label>
+                  <input name="shop_name" required value={shopNameInput} onChange={e => { setShopNameInput(e.target.value); setShowShopSuggestions(true); }} onFocus={() => setShowShopSuggestions(true)} onBlur={() => setTimeout(() => setShowShopSuggestions(false), 200)} className={`${inputCls} w-full mt-2`} placeholder="যেমন: রহিম মুদি দোকান..." />
+                  {showShopSuggestions && shopNameInput && Array.from(new Set(shopCredits.map(s => s.shop_name))).filter(n => n.toLowerCase().includes(shopNameInput.toLowerCase()) && n !== shopNameInput).length > 0 && (
+                    <div className="absolute top-full mt-1 w-full bg-white dark:bg-zinc-900 border border-[#B45309]/10 dark:border-white/10 rounded-2xl shadow-xl z-50 overflow-hidden">
+                      {Array.from(new Set(shopCredits.map(s => s.shop_name))).filter(n => n.toLowerCase().includes(shopNameInput.toLowerCase()) && n !== shopNameInput).slice(0, 5).map((n, i) => (
+                        <button type="button" key={i} onClick={() => { setShopNameInput(n); setShowShopSuggestions(false); }} className="w-full text-left px-4 py-3 hover:bg-[#F9F4F0] dark:hover:bg-black font-black text-sm">{n}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
+                  <select name="category" className={`${inputCls} w-full mt-2 appearance-none`}>
+                    {SHOP_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">মোট বাকির পরিমাণ ({currency})</label>
+                  <input name="total_amount" type="number" required className={`${inputCls} w-full mt-2`} placeholder="৳ 0" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">কারণ / বিবরণ</label>
+                  <input name="note" className={`${inputCls} w-full mt-2`} placeholder="কী কিনলাম, কোন তারিখে..." />
+                </div>
+                <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl mt-2">যোগ করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {payShopModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setPayShopModal(null); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setPayShopModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-1">টাকা পরিশোধ</h3>
+              <p className="text-sm text-slate-400 font-medium mb-6">{payShopModal.shop_name} — বাকি: {currency}{(payShopModal.total_amount - payShopModal.paid_amount).toLocaleString()}</p>
+              <form onSubmit={handlePayShopCredit} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">কত টাকা দিলেন?</label>
+                  <input name="amount" type="number" required max={payShopModal.total_amount - payShopModal.paid_amount} className={`${inputCls} w-full mt-2`} placeholder={`সর্বোচ্চ: ${currency}${payShopModal.total_amount - payShopModal.paid_amount}`} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">নোট</label>
+                  <input name="note" className={`${inputCls} w-full mt-2`} placeholder="বিবরণ..." />
+                </div>
+                <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl">নিশ্চিত করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {shopHistoryModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setShopHistoryModal(null); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative max-h-[80vh] flex flex-col">
+              <button onClick={() => setShopHistoryModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-1">পেমেন্ট হিস্ট্রি</h3>
+              <p className="text-sm text-slate-400 font-medium mb-6">{shopHistoryModal.shop_name}</p>
+              <div className="overflow-y-auto space-y-3 flex-1">
+                {(!shopHistoryModal.payments || shopHistoryModal.payments.length === 0) ? (
+                  <p className="text-center text-slate-400 py-10 font-bold">কোনো পেমেন্ট দেওয়া হয়নি</p>
+                ) : shopHistoryModal.payments.map(p => (
+                  <div key={p.id} className="p-4 bg-[#F9F4F0] dark:bg-zinc-900 rounded-2xl">
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="font-black text-lg">{currency}{p.amount.toLocaleString()}</p>
+                      <p className="text-xs text-slate-400 font-bold">{new Date(p.date).toLocaleDateString('bn-BD')}</p>
+                    </div>
+                    {p.note && <p className="text-sm text-slate-500 italic">"{p.note}"</p>}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {editShopModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[110] bg-[#18181B]/80 backdrop-blur-xl flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setEditShopModal(null); }}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white dark:bg-zinc-950 p-8 rounded-[40px] w-full max-w-md shadow-2xl relative">
+              <button onClick={() => setEditShopModal(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900"><X className="w-5 h-5"/></button>
+              <h3 className="text-2xl font-black mb-6">বাকি এডিট করুন</h3>
+              <form onSubmit={handleEditShopCredit} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">দোকানের নাম</label>
+                  <input name="shop_name" defaultValue={editShopModal.shop_name} className={`${inputCls} w-full mt-2`} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">ক্যাটাগরি</label>
+                  <select name="category" defaultValue={editShopModal.category} className={`${inputCls} w-full mt-2 appearance-none`}>
+                    {SHOP_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">মোট পরিমাণ</label>
+                  <input name="total_amount" type="number" defaultValue={editShopModal.total_amount} className={`${inputCls} w-full mt-2`} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-[#B45309] uppercase tracking-widest">নোট</label>
+                  <input name="note" defaultValue={editShopModal.note} className={`${inputCls} w-full mt-2`} />
+                </div>
+                <button type="submit" className="w-full bg-[#18181B] dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl">আপডেট করুন</button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ══════════════ MOBILE BOTTOM NAV ══════════════ */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-zinc-950 border-t border-[#B45309]/10 dark:border-white/10 px-2 py-2 safe-area-inset-bottom shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.08)]">
@@ -1780,8 +2226,8 @@ export default function AppOverview() {
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: 'হোম' },
             { id: 'transactions', icon: Receipt, label: 'লেনদেন' },
-            { id: 'goals', icon: PiggyBank, label: 'সংচয়' },
             { id: 'debts', icon: Briefcase, label: 'ধার' },
+            { id: 'shop_credit', icon: ShoppingCart, label: 'বাকি' },
             { id: 'settings', icon: Settings, label: 'সেটিংস' },
           ].map(item => (
             <button
